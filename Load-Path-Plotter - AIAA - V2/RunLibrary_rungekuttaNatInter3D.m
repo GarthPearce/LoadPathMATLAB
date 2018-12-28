@@ -24,29 +24,7 @@ function [x_path, y_path,z_path, intensity] =  RunLibrary_rungekuttaNatInter3D(.
             V = Vz;
     end
     %Locate the seed point in the model globally.
-%     in = false;
-%     [~,numel] = size(PartArr(1).elements);
-%     k=0;
-%     while in == false && k < numel
-%         k = k+1;
-%         inside = true;
-%         for kk = 1:6
-%             VN(1) = RN(1,kk,k);
-%             VN(2) = RN(2,kk,k);
-%             VN(3) = RN(3,kk,k);
-%             VP(1)  = p0(1) - XC(kk,k);
-%             VP(2)  = p0(2) - YC(kk,k);
-%             VP(3)  = p0(3) - ZC(kk,k);
-%             normal_check = VN(1)*VP(1) + VN(2)*VP(2) + VN(3)*VP(3);
-%             if normal_check > 0
-%                 inside = false;
-%             end
-%         end
-%         if inside == true
-%             in = true;
-%             Element = PartArr(1).elements(k);
-%         end
-%     end
+
     [in, Element] = point_in_element(p0, RN, PartArr, N);
     if in
         %Get and set stress function
@@ -130,7 +108,7 @@ function [x_path, y_path,z_path, intensity] =  RunLibrary_rungekuttaNatInter3D(.
         p0 =p0 + 1/6 * (dp1 + 2*dp2 + 2*dp3 +dp4);
 
 	%Locate element point inside
-        
+
         [in, new_Element] = point_in_element(p0, RN, PartArr, N);
 
         Element = new_Element;
