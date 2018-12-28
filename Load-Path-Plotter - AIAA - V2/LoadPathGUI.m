@@ -608,13 +608,11 @@ function pushbutton12_Callback(hObject, eventdata, handles)
     step_size = handles.edit5.UserData;
     path_length = handles.edit6.UserData;
     plot_minimum_vector = handles.edit7.UserData;
-    plot_maximum_vector = handles.edit8.UserData;    
-    Run_Solve_loadpath3D(dimension,sim_dir, seed_dir, save_dir, model_name,path_dir,...
-                pulse, parallel, newPDF,recompute, step_size, path_length, plot_minimum_vector, plot_maximum_vector);
-    
-
-
-
+    plot_maximum_vector = handles.edit8.UserData;
+    Run_Solve_loadpath3D(...
+        sim_dir, seed_dir, save_dir, model_name,path_dir,...
+        pulse, parallel, newPDF,recompute, step_size, path_length,...
+        plot_minimum_vector, plot_maximum_vector);
 
 function edit5_Callback(hObject, eventdata, handles)
 % hObject    handle to edit5 (see GCBO)
@@ -622,7 +620,7 @@ function edit5_Callback(hObject, eventdata, handles)
 % handles    structure with handles and user data (see GUIDATA)
 
 % Hints: get(hObject,'String') returns contents of edit5 as text
-%        str2double(get(hObject,'String')) returns contents of edit5 as a double    
+%        str2double(get(hObject,'String')) returns contents of edit5 as a double
    if step_size_error_check(hObject)
         hObject.UserData = str2double(get(hObject,'String'));
    end

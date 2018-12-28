@@ -1,12 +1,12 @@
-function [x_path, y_path,z_path, intensity] =  RunLibrary_rungekuttaNatInter3D(xseed,yseed,zseed, PartArr,...
-                             pathDir,~,maxPathLength, ReversePath, step_size, wb,nodes,RN,XC,YC,ZC)
-    
+function [x_path, y_path,z_path, intensity] =  RunLibrary_rungekuttaNatInter3D(...
+    xseed,yseed,zseed, PartArr, pathDir,maxPathLength, ReversePath,...
+    step_size, wb, RN, N)
 
     %p0 is initial seed point. Projection multiplier is used to 'jump' gaps
     %between parts in the model. It will project the path from onee part to
     %another. This procedure is a big source of time, some thought needs to
     %be given to how to optimise this routine.
-    projectionMultiplier = 2;    
+    projectionMultiplier = 2;
     p0 = [xseed; yseed; zseed];
 
     %Anonymous functions to streamline the organisation of the path
@@ -14,7 +14,7 @@ function [x_path, y_path,z_path, intensity] =  RunLibrary_rungekuttaNatInter3D(x
     Vx =@(stress, shearxy,shearxz) [stress; shearxy; shearxz];
     Vy =@(stress, shearxy, shearyz) [shearxy; stress; shearyz];
     Vz =@(stress, shearxz, shearyz) [shearxz; shearyz; stress];
-    
+
     switch lower(pathDir)
         case 'x'
             V = Vx;
@@ -23,32 +23,9 @@ function [x_path, y_path,z_path, intensity] =  RunLibrary_rungekuttaNatInter3D(x
         case 'z'
             V = Vz;
     end
-    %Locate the seed point in the model globally.    
-    in = false;
-    [irow,numel] = size(PartArr(1).elements);    
-    k=0;
-    %while in == false && k < numel-1;
-    while in == false && k < numel;    
-        k = k+1;
-           inside = true;
-           for kk = 1:6;
-                VN(1) = RN(1,kk,k);
-                VN(2) = RN(2,kk,k);
-                VN(3) = RN(3,kk,k);            
-                VP(1)  = p0(1) - XC(kk,k);
-                VP(2)  = p0(2) - YC(kk,k);
-                VP(3)  = p0(3) - ZC(kk,k);
-                dot = VN(1)*VP(1) + VN(2)*VP(2) + VN(3)*VP(3);
-                if dot > 0;
-                    inside = false;
-                end
-           end
-           if inside == true;
-			in = true;
-			Element = PartArr(1).elements(k);
-           end
-    end
-    
+    %Locate the seed point in the model globally.
+
+    [in, Element] = point_in_element(p0, RN, PartArr, N);
     if in
         %Get and set stress function
         [F, Fs1, Fs2] = setInterpFunc(Element, pathDir);
@@ -63,7 +40,7 @@ function [x_path, y_path,z_path, intensity] =  RunLibrary_rungekuttaNatInter3D(x
     %Populating with NaN's prevents plotting errors later.
     p = NaN(3,maxPathLength,'double');
     intensity = NaN(1,maxPathLength,'double');
-    w = 1; 
+    w = 1;
     element_change = false;
     %Flips the stress function when the backwards path is being computed.
     if ReversePath
@@ -101,15 +78,15 @@ function [x_path, y_path,z_path, intensity] =  RunLibrary_rungekuttaNatInter3D(x
             intensity(w) = norm([stress shear1 shear2]);
         end
         w=w+1;
-        
+
         %Find dp1 at first interpolation.
         %Normalise the poining vector relative to the initial test point.
         %Calculate new points:
-        
-        %Runge-Kutta in all its glory
+
+        %Runge-Kutta
         dp1 = V(stress, shear1, shear2)*step_size/intensity(w-1);
         p1 = p0 + dp1;
-        
+
         stress = F(p1(1), p1(2), p1(3));
         shear1 = Fs1(p1(1), p1(2), p1(3));
         shear2 = Fs2(p1(1), p1(2), p1(3));
@@ -129,98 +106,36 @@ function [x_path, y_path,z_path, intensity] =  RunLibrary_rungekuttaNatInter3D(x
         dp4 =  V(stress, shear1, shear2)*step_size/intensity(w-1);
 
         p0 =p0 + 1/6 * (dp1 + 2*dp2 + 2*dp3 +dp4);
-        
-        %disp(p0)
 
-        %Local find is a much faster finding function used when the
-        %last element is known.
-        %[in, new_Element] = localFind(p0',Element);
-        %disp(new_Element.ElementNo)
+	%Locate element point inside
 
-	%Locate element point inside	
-        in = false;
-        inside = false;
-        [irow,numel] = size(PartArr(1).elements);    
-        k=0;
-	   %while in == false && k < numel-1;       
-       while in == false && k < numel;
-           k = k+1;
-           inside = true;
-           for kk = 1:6;
-                VN(1) = RN(1,kk,k);
-                VN(2) = RN(2,kk,k);
-                VN(3) = RN(3,kk,k);    
-                VP(1)  = p0(1) - XC(kk,k);
-                VP(2)  = p0(2) - YC(kk,k);
-                VP(3)  = p0(3) - ZC(kk,k);            
-                dot = VN(1)*VP(1) + VN(2)*VP(2) + VN(3)*VP(3);
-                if dot > 0;
-                    inside = false;
-                end
-           end
-           if inside == true;
-			 in = true;
-			 new_Element = PartArr(1).elements(k);
-             %fprintf(' Point is inside Element %i\n ',new_Element.ElementNo);            
-           end
-        end
-        
-        if new_Element.ElementNo ~= Element.ElementNo
-            element_change = true;
-        else
-            element_change = false;
-        end
-        
+        [in, new_Element] = point_in_element(p0, RN, PartArr, N);
+
         Element = new_Element;
         %If the point is outside the local radius, we attempt to find it
         %globablly. The path is projected along its last vector in an
         %attempt to get it to 'land' in another element for the case where
         %its in a small gap between elements.
-        itrial = 1;
-        if itrial == 1,
         if ~in
             extension = 1;
-            while ~in && extension < projectionMultiplier+1;
-                R = (p0 - p(:,w-1))*extension*2 + p0;
-                %[in, return_Element] = globalFind(PartArr,Element, R); 
-
-    			in = false;
-    			inside = false;
-    			[irow,numel] = size(PartArr(1).elements);    
-    			k=0;
-			%while in == false && k < numel-1;
-			while in == false && k < numel;            
-        			k = k+1;
-           			inside = true;
-           			for kk = 1:6;
-                			VN(1) = RN(1,kk,k);
-                			VN(2) = RN(2,kk,k);
-                			VN(3) = RN(3,kk,k);            
-                			VP(1)  = p0(1) - XC(kk,k);
-                			VP(2)  = p0(2) - YC(kk,k);
-                			VP(3)  = p0(3) - ZC(kk,k);            
-                			dot = VN(1)*VP(1) + VN(2)*VP(2) + VN(3)*VP(3);
-                			if dot > 0;
-                    			inside = false;
-                			end
-           			end
-           			if inside == true;
-					in = true;
-					Element = PartArr(1).elements(k);
-            			%fprintf(' Point is inside Element %i\n ',Element.ElementNo);            
-                    end
-                end
+            while ~in && extension < projectionMultiplier+1
+                R = (p0 - p(:,w-1)) * extension * 2 + p0;
+                [in, Element] = point_in_element(R, RN, PartArr, N);
                 extension = extension+1;
-        end
-        if in
+            end
+            if in
                 p0 = R;
                 Element = return_Element;
+            end
         end
-        end
+        if in && new_Element.ElementNo ~= Element(1).ElementNo
+            element_change = true;
+        else
+            element_change = false;
         end
     end
     nancols = ~isnan(p(1,:));
-    if nancols > 1;
+    if nancols > 1
         %To keep plot inside domain
     nancols = nancols-1;
     end
@@ -237,7 +152,6 @@ function [F, Fs1, Fs2] = setInterpFunc(Element, pathDir)
     coordx = [nodes(:).xCoordinate]';
     coordy = [nodes(:).yCoordinate]';
     coordz = [nodes(:).zCoordinate]';
-    
 
     if strcmpi(pathDir,'x')
         F = scatteredInterpolant(coordx(:), coordy(:), coordz(:), [nodes(:).xStress]', 'natural');
@@ -252,4 +166,12 @@ function [F, Fs1, Fs2] = setInterpFunc(Element, pathDir)
         Fs1 = scatteredInterpolant(coordx, coordy, coordz, [nodes(:).yzStress]', 'natural');
         Fs2 = scatteredInterpolant(coordx, coordy, coordz, [nodes(:).xzStress]', 'natural');
     end
+end
+
+function [varargout] = point_in_element(p0, RN, PartArr, N)
+    VP = -N + p0;
+    test = ~any(dot(RN,VP,1)>0,2);
+    in = any(test);
+    Element = PartArr(1).elements(test);
+    varargout = {in, Element};
 end
