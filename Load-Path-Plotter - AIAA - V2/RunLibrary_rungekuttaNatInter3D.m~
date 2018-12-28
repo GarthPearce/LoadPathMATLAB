@@ -47,7 +47,7 @@ function [x_path, y_path,z_path, intensity] =  RunLibrary_rungekuttaNatInter3D(.
 %             Element = PartArr(1).elements(k);
 %         end
 %     end
-    [in, Element] = point_in_element(p0, RN, PartArr, N);
+    [in, new_Element] = point_in_element(p0, RN, PartArr, N);
     if in
         %Get and set stress function
         [F, Fs1, Fs2] = setInterpFunc(Element, pathDir);
@@ -105,7 +105,7 @@ function [x_path, y_path,z_path, intensity] =  RunLibrary_rungekuttaNatInter3D(.
         %Normalise the poining vector relative to the initial test point.
         %Calculate new points:
 
-        %Runge-Kutta
+        %Runge-Kutta in all its glory
         dp1 = V(stress, shear1, shear2)*step_size/intensity(w-1);
         p1 = p0 + dp1;
 
@@ -130,8 +130,44 @@ function [x_path, y_path,z_path, intensity] =  RunLibrary_rungekuttaNatInter3D(.
         p0 =p0 + 1/6 * (dp1 + 2*dp2 + 2*dp3 +dp4);
 
 	%Locate element point inside
+        in = false;
+        inside = false;
+        [irow,numel] = size(PartArr(1).elements);    
+        k=0;
+        disp(0)
         
         [in, new_Element] = point_in_element(p0, RN, PartArr, N);
+        
+        disp('1')
+        tic
+        while in == false && k < numel
+           k = k+1;
+           inside = true;
+           for kk = 1:6
+                VN(1) = RN(1,kk,k);
+                VN(2) = RN(2,kk,k);
+                VN(3) = RN(3,kk,k);
+                VP(1)  = p0(1) - XC(kk,k);
+                VP(2)  = p0(2) - YC(kk,k);
+                VP(3)  = p0(3) - ZC(kk,k);
+                normal_check = VN(1)*VP(1) + VN(2)*VP(2) + VN(3)*VP(3);
+                if normal_check > 0
+                    inside = false;
+                end
+           end
+           if inside == true
+			 in = true;
+			 new_Element = PartArr(1).elements(k);
+             %fprintf(' Point is inside Element %i\n ',new_Element.ElementNo);
+           end
+        end
+        toc
+
+        if new_Element.ElementNo ~= Element.ElementNo
+            element_change = true;
+        else
+            element_change = false;
+        end
 
         Element = new_Element;
         %If the point is outside the local radius, we attempt to find it
@@ -142,18 +178,38 @@ function [x_path, y_path,z_path, intensity] =  RunLibrary_rungekuttaNatInter3D(.
             extension = 1;
             while ~in && extension < projectionMultiplier+1
                 R = (p0 - p(:,w-1)) * extension * 2 + p0;
-                [in, Element] = point_in_element(R, RN, PartArr, N);
-                extension = extension+1;
-            end
-            if in
-                p0 = R;
-                Element = return_Element;
-            end
+    			in = false;
+    			inside = false;
+    			[irow,numel] = size(PartArr(1).elements);
+    			k=0;
+                tic
+                while in == false && k < numel
+                    k = k+1;
+                    inside = true;
+                    for kk = 1:6;
+                        VN(1) = RN(1,kk,k);
+                        VN(2) = RN(2,kk,k);
+                        VN(3) = RN(3,kk,k);
+                        VP(1)  = p0(1) - XC(kk,k);
+                        VP(2)  = p0(2) - YC(kk,k);
+                        VP(3)  = p0(3) - ZC(kk,k);
+                        normal_check = VN(1)*VP(1) + VN(2)*VP(2) + VN(3)*VP(3);
+                        if normal_check > 0;
+                            inside = false;
+                        end
+                    end
+                    if inside == true
+                        in = true;
+                        Element = PartArr(1).elements(k);
+                    end
+                end
+                toc
+            extension = extension+1;
         end
-        if in && new_Element.ElementNo ~= Element(1).ElementNo
-            element_change = true;
-        else
-            element_change = false;
+        if in
+            p0 = R;
+            Element = return_Element;
+        end
         end
     end
     nancols = ~isnan(p(1,:));
