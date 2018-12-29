@@ -38,13 +38,13 @@ function Run_Solve_loadpath3D(sim_dir, seed_dir, save_dir, model_name,path_dir,.
     %corresponding mac command.
 %     system(['taskkill /fi "WINDOWTITLE eq ', model_name,'.pdf"']);
     if ismac
-        slash = '/';
+        path_separator = '/';
     elseif ispc
-        slash = '\';
+        path_separator = '\';
         system(['taskkill /fi "WINDOWTITLE eq ', model_name,'.pdf"']);
     end
 
-    nodei = [sim_dir slash 'nodeInfo.txt'];
+    nodei = strjoin([sim_dir path_separator 'nodeInfo.txt'],'');
     numNodes = importdata(nodei);
     numNodes = numNodes(2);
 
@@ -52,8 +52,10 @@ function Run_Solve_loadpath3D(sim_dir, seed_dir, save_dir, model_name,path_dir,.
 
     % Detects whether previous data has been computed, if yes, skips
     % recomputation unless forced by user in GUI
+    
+    output_path = strjoin([save_dir, path_separator,'Path Data', path_separator, 'data_', model_data_name,'.mat'], '');
 
-    if ~exist([save_dir slash 'Path Data' slash 'data_' model_data_name,'.mat'], 'file') || recompute
+    if ~exist(output_path, 'file') || recompute
 
         fprintf('New model or user nominated to recompute data. Starting now.\n')
         waitbar(current_time/total_time,wb,sprintf('Computing Initial Data'))
@@ -75,8 +77,8 @@ function Run_Solve_loadpath3D(sim_dir, seed_dir, save_dir, model_name,path_dir,.
         current_time = current_time + data_read_time/3;
 
         fprintf('Elements constructed, directories being created and data being saved.\n')
-        mkdir([save_dir, slash 'Path Data'])
-        save([save_dir,slash 'Path Data' slash 'data_',model_data_name,'.mat'],'PartArr','nodes', 'nodePerEl');
+        mkdir(strjoin([save_dir path_separator 'Path Data'],''))
+        save(strjoin([save_dir path_separator 'Path Data' path_separator 'data_' model_data_name '.mat'],''),'PartArr','nodes', 'nodePerEl');
 
     %% ******************  Define quadrilateral faces of elements **************************
     %% ******************  and check face normal is positive pointing out  **************
@@ -161,23 +163,22 @@ function Run_Solve_loadpath3D(sim_dir, seed_dir, save_dir, model_name,path_dir,.
             end
         end
         clear N
-%         N = gpuArray([XC;YC;ZC]);
         N(1,:,:) = XC;
         N(2,:,:) = YC;
         N(3,:,:) = ZC;
         %% ******************  If numSeeds == 0 Define Seeds based on maximum pointing vector **************************
-        %% ******************  Defines seeds at peak of pulse for transient solution          **************************   
+        %% ******************  Defines seeds at peak of pulse for transient solution          **************************
         if numSeeds == 0;
             %Set up list of element pointing vectors
             %Determine x-coordinate for maximum magnitude of pointing vector 
             %to define peak of pulse. Set seeds on all elements with XCG
-            %equal to that value        
-            VectorMag(1:numel) = 0.0; 
+            %equal to that value
+            VectorMag(1:numel) = 0.0;
             for k = 1:numel
                 elnods = PartArr(1).elements(k).nodenums;
                 PointVec(1:3) = 0.0;
                 for kk = 1,8;
-                    kkk = elnods(kk);    
+                    kkk = elnods(kk);
                     if path_dir == 'X'
                         PointVec(1) = PointVec(1) + nodes(kkk).xStress/8.0;
                         PointVec(2) = PointVec(2) + nodes(kkk).xyStress/8.0;
@@ -210,15 +211,14 @@ function Run_Solve_loadpath3D(sim_dir, seed_dir, save_dir, model_name,path_dir,.
                 yseed(nSeeds) = CGXYZ(2,k);
                 zseed(nSeeds) = CGXYZ(3,k);
                 end
-            end    
+            end
             numSeeds = nSeeds;
-        end  
-            
+        end
     else
         %This loads data if the preprocessign has already been done.
         fprintf('Previous model detected, loading data.\n')
         waitbar(current_time/total_time,wb,sprintf('Loading Data'))
-        load([save_dir slash 'Path Data' slash 'data_' model_data_name,'.mat']);
+        load(strjoin([save_dir path_separator 'Path Data' path_separator 'data_' model_data_name,'.mat'],''));
         current_time = current_time + data_read_time;
         
         fprintf('Data loaded. Starting path computation.\n')
@@ -409,16 +409,16 @@ function Run_Solve_loadpath3D(sim_dir, seed_dir, save_dir, model_name,path_dir,.
     %data sets may have to be condensed. And that its a good backup of the
     %path calculation.
 
-    save([save_dir slash 'Path Data' slash 'pathdata_' model_data_name '.mat'], 'Paths');
+    save(strjoin([save_dir path_separator 'Path Data' path_separator 'pathdata_' model_data_name '.mat'],''), 'Paths');
     fig = figure;
     fprintf('Plotting Paths\n')
 
     modelPlot3D([Paths(:).X],[Paths(:).Y],[Paths(:).Z],[Paths(:).I],PartArr,nodes,pulse)
     % Create new directory to store the output plots
-    mkdir(save_dir,[slash 'Path Plots'])
+    mkdir(save_dir,[path_separator 'Path Plots'])
     %********************Name of 'bmp' file hard-wired ************************
     %saveas(fig,'examples\Example1 - Isotropic Plate with Loaded Hole\Path Plots\myplot.bmp')
-    saveas(fig,[save_dir slash 'Path Plots' slash model_name, '.bmp'])
+    saveas(fig,strjoin([save_dir path_separator 'Path Plots' path_separator model_name, '.bmp'],''))
     %******************** Waitbar and Status Update ***************************
     if getappdata(wb,'canceling')
         delete(wb)
@@ -430,9 +430,9 @@ function Run_Solve_loadpath3D(sim_dir, seed_dir, save_dir, model_name,path_dir,.
 
     if newPDF
         dt = datestr(now,'HH.MM.SS_dd/mm/yy');
-        dateAppenedFN = [save_dir, slash 'Path Plots' slash ,model_name,'_', dt, '.pdf'];
+        dateAppenedFN = [save_dir, path_separator 'Path Plots' path_separator ,model_name,'_', dt, '.pdf'];
     else
-        dateAppenedFN = [save_dir,slash 'Path Plots' slash ,model_name, '.pdf'];
+        dateAppenedFN = [save_dir,path_separator 'Path Plots' path_separator ,model_name, '.pdf'];
     end
 
     % Contrary to variable name and the description in the GUI, this was

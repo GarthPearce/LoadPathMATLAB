@@ -11,11 +11,11 @@ function [nodes] = Input_NodeDatRead(fname, StressData, numNodes)
 
     clear nodes
     if ismac
-        slash = '/';
+        path_separator = '/';
     elseif ispc
-        slash = '\';
+        path_separator = '\';
     end
-    fname = [fname  slash 'ds.dat'];
+    fname = strjoin([fname  path_separator 'ds.dat'],'');
     
     nodeNums = StressData(1,:);
     xstress = StressData(2,:);

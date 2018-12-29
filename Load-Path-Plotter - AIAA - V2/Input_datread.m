@@ -8,11 +8,11 @@ function [numNodes,PartArr] = Input_datread(fpath, nodes)
 
 
     if ismac
-        slash = '/';
+        path_separator = '/';
     elseif ispc
-        slash = '\';
+        path_separator = '\';
     end
-    fname = [fpath  slash 'ds.dat'];
+    fname = strjoin([fpath  path_separator 'ds.dat'],'');
 
     datafile = fopen(fname);
 % Scans down the ds.dat file until the start of the element definitions.

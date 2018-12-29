@@ -10,12 +10,12 @@ function [StressData, count] = Input_nodeDat(filePath, numNodes)
 %[<Node number>, <X stress>, <Y stress>, <Z stress>, <XY stress>, <YZ stress>, <XZ stress>]
 
     if ismac
-        slash = '/';
+        path_separator = '/';
     elseif ispc
-        slash = '\';
+        path_separator = '\';
     end
     numOfResults = 7;
-    filePath = [filePath  slash 'nodalSolution.txt'];
+    filePath = strjoin([filePath  path_separator 'nodalSolution.txt'],'');
     
     datafile = fopen(filePath);
 %Scans until the start of the file is found. Trash data is a temp variable
