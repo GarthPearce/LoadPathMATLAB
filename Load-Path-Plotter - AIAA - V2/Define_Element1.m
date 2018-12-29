@@ -52,7 +52,14 @@ classdef Define_Element1 < Define_FEM
                 Nodes(k).inelement = obj;
             end
         end
-
+        function show_element(obj)
+            v = obj.verticies';
+            K = convhull(v(1,:), v(2,:), v(3,:));
+            fig = gcf;
+            hold on
+            trimesh(K, v(1,:), v(2,:), v(3,:), 'FaceColor','none');
+        end
+            
 
     end 
 end

@@ -1,44 +1,44 @@
 function [] = RunPlot_wireFrame(PartArr,Alpha, Buffer,nodes)
     ifsurfplot = 1;
     if ifsurfplot == 1;
-	%Extract faces and order nodes lowest to highest
-	nface = 0;
-    [irow,numel] = size(PartArr(1).elements);    
-    %disp(numel);
-	for k = 1:numel;
-		elnod = PartArr(1).elements(k).nodenums;
-        %disp(elnod);
-           nface = nface+1;
-		faceM(nface,1) = elnod(1);
-		faceM(nface,2) = elnod(2);
-		faceM(nface,3) = elnod(3);
-		faceM(nface,4) = elnod(4);
-           nface = nface+1;
-		faceM(nface,1) = elnod(5);
-		faceM(nface,2) = elnod(6);
-		faceM(nface,3) = elnod(7);
-		faceM(nface,4) = elnod(8);
-           nface = nface+1;
-		faceM(nface,1) = elnod(5);
-		faceM(nface,2) = elnod(1);
-		faceM(nface,3) = elnod(4);
-		faceM(nface,4) = elnod(8);
-           nface = nface+1;
-		faceM(nface,1) = elnod(6);
-		faceM(nface,2) = elnod(2);
-		faceM(nface,3) = elnod(3);
-		faceM(nface,4) = elnod(7);
-           nface = nface+1;
-		faceM(nface,1) = elnod(5);
-		faceM(nface,2) = elnod(6);
-		faceM(nface,3) = elnod(2);
-		faceM(nface,4) = elnod(1);
-           nface = nface+1;
-		faceM(nface,1) = elnod(8);
-		faceM(nface,2) = elnod(7);
-		faceM(nface,3) = elnod(3);
-		faceM(nface,4) = elnod(4);
-	end
+        %Extract faces and order nodes lowest to highest
+        nface = 0;
+        [irow,numel] = size(PartArr(1).elements);    
+        %disp(numel);
+        for k = 1:numel;
+            elnod = PartArr(1).elements(k).nodenums;
+            %disp(elnod);
+               nface = nface+1;
+            faceM(nface,1) = elnod(1);
+            faceM(nface,2) = elnod(2);
+            faceM(nface,3) = elnod(3);
+            faceM(nface,4) = elnod(4);
+               nface = nface+1;
+            faceM(nface,1) = elnod(5);
+            faceM(nface,2) = elnod(6);
+            faceM(nface,3) = elnod(7);
+            faceM(nface,4) = elnod(8);
+               nface = nface+1;
+            faceM(nface,1) = elnod(5);
+            faceM(nface,2) = elnod(1);
+            faceM(nface,3) = elnod(4);
+            faceM(nface,4) = elnod(8);
+               nface = nface+1;
+            faceM(nface,1) = elnod(6);
+            faceM(nface,2) = elnod(2);
+            faceM(nface,3) = elnod(3);
+            faceM(nface,4) = elnod(7);
+               nface = nface+1;
+            faceM(nface,1) = elnod(5);
+            faceM(nface,2) = elnod(6);
+            faceM(nface,3) = elnod(2);
+            faceM(nface,4) = elnod(1);
+               nface = nface+1;
+            faceM(nface,1) = elnod(8);
+            faceM(nface,2) = elnod(7);
+            faceM(nface,3) = elnod(3);
+            faceM(nface,4) = elnod(4);
+        end
 	%Sort nodes on face in ascending order
 	faceMO = sort(faceM,2);
 	%Sort array by values in first column

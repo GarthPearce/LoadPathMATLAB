@@ -601,10 +601,10 @@ function pushbutton12_Callback(hObject, eventdata, handles)
     parallel = handles.checkbox1.Value;
     newPDF = handles.checkbox2.Value;
     recompute = handles.checkbox3.Value;
-    sim_dir = handles.edit1.String;
-    seed_dir = handles.edit2.String;
-    save_dir = handles.edit4.String;
-    path_dir = handles.popupmenu2.String{handles.popupmenu2.Value};
+    sim_dir = string(handles.edit1.String);
+    seed_dir = string(handles.edit2.String);
+    save_dir = string(handles.edit4.String);
+    path_dir = string(handles.popupmenu2.String{handles.popupmenu2.Value});
     step_size = handles.edit5.UserData;
     path_length = handles.edit6.UserData;
     plot_minimum_vector = handles.edit7.UserData;

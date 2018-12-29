@@ -26,7 +26,7 @@ function [x_path, y_path,z_path, intensity] =  RunLibrary_rungekuttaNatInter3D(.
     %Locate the seed point in the model globally.
 
     [in, Element] = point_in_element(p0, RN, PartArr, N);
-
+    Element.show_element()
     if in
         %Get and set stress function
         [F, Fs1, Fs2] = setInterpFunc(Element, pathDir);
@@ -98,6 +98,7 @@ function [x_path, y_path,z_path, intensity] =  RunLibrary_rungekuttaNatInter3D(.
         shear1 = Fs1(p2(1), p2(2), p2(3));
         shear2 = Fs2(p2(1), p2(2), p2(3));
         dp3 =  V(stress, shear1, shear2)*step_size/intensity(w-1);
+        %p3 = p0 + 0.5*dp2;
         p3 = p0 + 0.5*dp3;
 
         stress = F(p3(1), p3(2), p3(3));
@@ -107,10 +108,11 @@ function [x_path, y_path,z_path, intensity] =  RunLibrary_rungekuttaNatInter3D(.
 
         p0 =p0 + 1/6 * (dp1 + 2*dp2 + 2*dp3 +dp4);
 
-	    %Locate element point inside
+	%Locate element point inside
 
         [in, new_Element] = point_in_element(p0, RN, PartArr, N);
 
+        Element = new_Element;
         %If the point is outside the local radius, we attempt to find it
         %globablly. The path is projected along its last vector in an
         %attempt to get it to 'land' in another element for the case where
@@ -127,13 +129,13 @@ function [x_path, y_path,z_path, intensity] =  RunLibrary_rungekuttaNatInter3D(.
                 Element = return_Element;
             end
         end
-
-        if in && new_Element.ElementNo ~= Element.ElementNo
+        if in && new_Element.ElementNo ~= Element(1).ElementNo
             element_change = true;
+            Element.show_element()
         else
             element_change = false;
         end
-        Element = new_Element;
+        scatter3(p0(1), p0(2), p0(3),intensity(w-1), 'filled')
     end
     nancols = ~isnan(p(1,:));
     if nancols > 1

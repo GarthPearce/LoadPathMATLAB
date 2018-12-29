@@ -54,7 +54,7 @@ function Run_Solve_loadpath3D(sim_dir, seed_dir, save_dir, model_name,path_dir,.
 
     % Detects whether previous data has been computed, if yes, skips
     % recomputation unless forced by user in GUI
-    
+
     output_path = strjoin([save_dir, path_separator,'Path Data', path_separator, 'data_', model_data_name,'.mat'], '');
 
     if ~exist(output_path, 'file') || recompute
@@ -164,6 +164,11 @@ function Run_Solve_loadpath3D(sim_dir, seed_dir, save_dir, model_name,path_dir,.
                 end
             end
         end
+        figure
+        hold on
+        Alpha = 0.1;
+        Buffer = 0.35;
+        RunPlot_wireFrame(PartArr,Alpha, Buffer,nodes);
         clear N
         N(1,:,:) = XC;
         N(2,:,:) = YC;
