@@ -2,6 +2,8 @@ function Run_Solve_loadpath3D(sim_dir, seed_dir, save_dir, model_name,path_dir,.
                     pulse, parallel, newPDF, recompute, step_size, path_length,...
                     plot_minimum_vector, plot_maximum_vector)
 %% ********************  House Keeping   ******************************
+
+%TODO: Parallel computing curently buggy due to recent changes. Need to correct the function inputs and include the transient code.
 % Closes previously opened waitbars
     F = findall(0,'type','figure','tag','TMWWaitbar');
     delete(F);
