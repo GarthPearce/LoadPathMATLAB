@@ -1,5 +1,4 @@
-classdef Define_Element1 < Define_FEM 
-    
+classdef Define_Element1 < Define_FEM
     properties (SetAccess = public, GetAccess = public)
         ElementNo = 0;
         nodes;
@@ -10,39 +9,37 @@ classdef Define_Element1 < Define_FEM
         part_num;
         part_idx;
         verticies;
-        
-
     end
 
     methods
         %%Initialise Element%%
-        function obj = Define_Element1(ElementNumber, xNodes, Import)
+        function obj = Define_Element1(ElementNumber, Nodes, Import)
 
             if ~exist('ElementNumber', 'var')
                 ElementNumber = NaN;
             end
-            if ~exist('xNodes', 'var')
-%                 xNodes = Node();
+            if ~exist('Nodes', 'var')
+%                 Nodes = Node();
             end
             if ~exist('Import', 'var')
                 obj.importeddata = 0;
             else
-                obj.importeddata = 1;                
+                obj.importeddata = 1;
             end
             obj.ElementNo = ElementNumber;
-            
+
             if exist('Import', 'var')
-                                                              
-                obj.nodes = xNodes;
-                obj.nodenums = [xNodes(:).NodeNum];
-                obj.verticies = [xNodes(:).Coordinates]';
-                
-                obj.sphere_radius = max(pdist([[xNodes(:).xCoordinate];...
-                           [xNodes(:).yCoordinate];...
-                           [xNodes(:).zCoordinate]]'))/2;
+                obj.nodes = Nodes;
+                obj.nodenums = [Nodes(:).NodeNum];
+                obj.verticies = [Nodes(:).Coordinates]';
+
+                obj.sphere_radius = max(pdist([...
+                        [Nodes(:).xCoordinate];...
+                        [Nodes(:).yCoordinate];...
+                        [Nodes(:).zCoordinate]]'))/2;
             end
         end
-        
+
         function obj = set.ElementNo(obj, num)
             obj.ElementNo = num;
         end
@@ -59,8 +56,5 @@ classdef Define_Element1 < Define_FEM
             hold on
             trimesh(K, v(1,:), v(2,:), v(3,:), 'FaceColor','none');
         end
-            
-
-    end 
+    end
 end
- 

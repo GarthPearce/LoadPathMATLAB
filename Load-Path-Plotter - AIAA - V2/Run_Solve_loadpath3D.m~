@@ -35,6 +35,10 @@ function Run_Solve_loadpath3D(sim_dir, seed_dir, save_dir, model_name,path_dir,.
     model_name = [model_name, ' - ',upper(path_dir), ' Path'];
     model_data_name = regexprep(model_name, ' ', '_');
 
+    %Want to make this platform independent. This line is only supported in
+    %windows distributions. Working on generalising, as yest dont have
+    %corresponding mac command.
+%     system(['taskkill /fi "WINDOWTITLE eq ', model_name,'.pdf"']);
     if ismac
         path_separator = '/';
     elseif ispc
@@ -81,23 +85,32 @@ function Run_Solve_loadpath3D(sim_dir, seed_dir, save_dir, model_name,path_dir,.
     %% ******************  Define quadrilateral faces of elements **************************
     %% ******************  and check face normal is positive pointing out  **************
     %% ******************  Only works for Hex8 Bricks
-    %TODO: I think this should almost be apart of pre-processing. Looping over the elements again can surely be done in the element generation part of the program.
         numParts = 1;
-        nfaces = 6;
         [irow,numel] = size(PartArr(numParts).elements);
-        RN = zeros(3,nfaces,numel);
-        C = zeros(nfaces,numel);
-        dkfaces = face_def('8_brick');
+        RN(1:3,1:6,1:numel) = 0.0;
+        XC(1:6,1:numel) = 0.0;
+        YC(1:6,1:numel) = 0.0;
+        ZC(1:6,1:numel) = 0.0;
+        nfaces = 6;
+        %numel = PartArr(1).span;
+            I = 1;
+            J = 2;
+            K = 3;
+            L = 4;
+            M = 5;
+            N = 6;
+            O = 7;
+            P = 8;
+        dkfaces = [[J;I;L;K],[I;J;N;M],[J;K;O;N],[K;L;P;O],[L;I;M;P],[M;N;O;P]];
         for kk = 1:numel
             elnods = PartArr(1).elements(kk).nodenums;
             for k = 1:nfaces
                 for kkk = 1:4
                     kkkk = dkfaces(kkk,k);
                     kkkkk = elnods(kkkk);
-                    Cdk = nodes.Coordinates;
-                    % Xdk(kkk,k) = nodes(kkkkk).xCoordinate;
-                    % Ydk(kkk,k) = nodes(kkkkk).yCoordinate;
-                    % Zdk(kkk,k) = nodes(kkkkk).zCoordinate;
+                    Xdk(kkk,k) = nodes(kkkkk).xCoordinate;
+                    Ydk(kkk,k) = nodes(kkkkk).yCoordinate;
+                    Zdk(kkk,k) = nodes(kkkkk).zCoordinate;
                 end
                 %Centroid of face
                 XC(k,kk) = 0.0;
@@ -113,12 +126,12 @@ function Run_Solve_loadpath3D(sim_dir, seed_dir, save_dir, model_name,path_dir,.
             for kkk=1:3
                 CGXYZ(kkk,kk) = 0.0;
             end
-            for k = 1 : nfaces
+            for k = 1 : nfaces;
                 CGXYZ(1,kk) = CGXYZ(1,kk) + XC(k,kk)/6.0;
                 CGXYZ(2,kk) = CGXYZ(2,kk) + YC(k,kk)/6.0;
                 CGXYZ(3,kk) = CGXYZ(3,kk) + ZC(k,kk)/6.0;
             end
-            for k = 1:nfaces
+            for k = 1:nfaces;
                 %Normal to face
                 V1 = Xdk(3,k) - Xdk(1,k);
                 V2 = Ydk(3,k) - Ydk(1,k);
@@ -194,18 +207,18 @@ function Run_Solve_loadpath3D(sim_dir, seed_dir, save_dir, model_name,path_dir,.
                 VectorMag(k) = norm(PointVec);
             end
             [VectorSort, IX] = sort(VectorMag);
-            k=1;
-            kk = IX(numel-k+1);
-            xs = CGXYZ(1,kk);
-            ys = CGXYZ(2,kk);
-            zs = CGXYZ(3,kk);
-            nSeeds = 0;
-            for k = 1:numel
-                if abs(CGXYZ(1,k) - xs) < 0.1
-                    nSeeds = nSeeds + 1;
-                    xseed(nSeeds) = CGXYZ(1,k);
-                    yseed(nSeeds) = CGXYZ(2,k);
-                    zseed(nSeeds) = CGXYZ(3,k);
+                k=1;
+                kk = IX(numel-k+1);
+                xs = CGXYZ(1,kk);
+                ys = CGXYZ(2,kk);
+                zs = CGXYZ(3,kk);
+                nSeeds = 0;
+            for k = 1:numel;    
+                if abs(CGXYZ(1,k) - xs) < 0.1;
+                nSeeds = nSeeds + 1;
+                xseed(nSeeds) = CGXYZ(1,k);
+                yseed(nSeeds) = CGXYZ(2,k);
+                zseed(nSeeds) = CGXYZ(3,k);
                 end
             end
             numSeeds = nSeeds;
@@ -216,8 +229,9 @@ function Run_Solve_loadpath3D(sim_dir, seed_dir, save_dir, model_name,path_dir,.
         waitbar(current_time/total_time,wb,sprintf('Loading Data'))
         load(strjoin([save_dir path_separator 'Path Data' path_separator 'data_' model_data_name,'.mat'],''));
         current_time = current_time + data_read_time;
-
+        
         fprintf('Data loaded. Starting path computation.\n')
+        
     end
         %******************** Waitbar and Status Update ***************************
 
@@ -225,10 +239,11 @@ function Run_Solve_loadpath3D(sim_dir, seed_dir, save_dir, model_name,path_dir,.
         delete(wb)
         return
     end
-
+    
     waitbar(current_time/total_time,wb,sprintf('Starting Paths'))
 
     %% ****************  Load Path Generation  ******************************
+    
     %Initialise data containers for load paths
     
     Paths(numSeeds).X.forward = [];
@@ -492,17 +507,3 @@ function [] = modelPlot3D(x_paths,y_paths,z_paths,Intensity,PartArr,nodes,pulse)
     %Turn off plot of colorbar
     colorbar;
 end
-function [faces] = face_def(elem_type)
-    switch elem_type
-        case '8_brick'
-            I = 1; J = 2; K = 3; L = 4; M = 5; N = 6; O = 7; P = 8;
-            faces = [...
-                [J;I;L;K],...
-                [I;J;N;M],...
-                [J;K;O;N],...
-                [K;L;P;O],...
-                [L;I;M;P],...
-                [M;N;O;P]];
-    end
-end
-

@@ -54,61 +54,36 @@ function [x_path, y_path,z_path, intensity] =  RunLibrary_rungekuttaNatInter3D(.
         %Terminate program if cancel button is pressed
         if getappdata(wb,'canceling')
             delete(wb)
-            return
+            break
         end
         %Interpolate stress initially, and get the relative normalisation
         %value. If the element is unchanged, the same stress function can
         %be used.
-        if ~element_change
-            p(:,w) = p0;
-            stress = F(p0(1), p0(2), p0(3));
-            shear1 = Fs1(p0(1), p0(2), p0(3));
-            shear2 = Fs2(p0(1), p0(2), p0(3));
-            intensity(w) = norm([stress shear1 shear2]);
-        else%Other wise it needs to be reset
-            [F, Fs1, Fs2] = setInterpFunc(Element,pathDir);
-            if ReversePath
-                F=@(x,y, z) -F(x,y, z);
-                Fs1=@(x,y,z) -Fs1(x,y,z);
-                Fs2=@(x,y,z) -Fs2(x,y,z);
-            end
-            p(:,w) = p0;
-            stress = F(p0(1,1), p0(2,1), p0(3,1));
-            shear1 = Fs1(p0(1,1), p0(2,1), p0(3,1));
-            shear2 = Fs2(p0(1,1), p0(2,1), p0(3,1));
-            intensity(w) = norm([stress shear1 shear2]);
-        end
-        w=w+1;
 
+        p(:,w) = p0;
+        stress = F(p0(1), p0(2), p0(3));
+        shear1 = Fs1(p0(1), p0(2), p0(3));
+        shear2 = Fs2(p0(1), p0(2), p0(3));
+        intensity(w) = norm([stress shear1 shear2]);
         %Find dp1 at first interpolation.
         %Normalise the poining vector relative to the initial test point.
         %Calculate new points:
 
         %Runge-Kutta
-        dp1 = V(stress, shear1, shear2)*step_size/intensity(w-1);
+        dp1 = stress_interp(p0s);
         p1 = p0 + dp1;
 
-        stress = F(p1(1), p1(2), p1(3));
-        shear1 = Fs1(p1(1), p1(2), p1(3));
-        shear2 = Fs2(p1(1), p1(2), p1(3));
-        dp2 =  V(stress, shear1, shear2)*step_size/intensity(w-1);
+        dp2 = stress_interp(p1)
         p2 = p0 + 0.5*dp2;
 
-        stress = F(p2(1), p2(2), p2(3));
-        shear1 = Fs1(p2(1), p2(2), p2(3));
-        shear2 = Fs2(p2(1), p2(2), p2(3));
-        dp3 =  V(stress, shear1, shear2)*step_size/intensity(w-1);
+        dp2 = stress_interp(p2)
         p3 = p0 + 0.5*dp3;
 
-        stress = F(p3(1), p3(2), p3(3));
-        shear1 = Fs1(p3(1), p3(2), p3(3));
-        shear2 = Fs2(p3(1), p3(2), p3(3));
-        dp4 =  V(stress, shear1, shear2)*step_size/intensity(w-1);
+        dp4 = stress_interp(p3)
 
         p0 =p0 + 1/6 * (dp1 + 2*dp2 + 2*dp3 +dp4);
 
-	    %Locate element point inside
-
+	    %Locate element that the point is inside
         [in, new_Element] = point_in_element(p0, RN, PartArr, N);
 
         %If the point is outside the local radius, we attempt to find it
@@ -118,7 +93,7 @@ function [x_path, y_path,z_path, intensity] =  RunLibrary_rungekuttaNatInter3D(.
         if ~in
             extension = 1;
             while ~in && extension < projectionMultiplier+1
-                R = (p0 - p(:,w-1)) * extension * 2 + p0;
+                R = (p0 - p(:,w)) * extension * 2 + p0;
                 [in, Element] = point_in_element(R, RN, PartArr, N);
                 extension = extension+1;
             end
@@ -127,26 +102,35 @@ function [x_path, y_path,z_path, intensity] =  RunLibrary_rungekuttaNatInter3D(.
                 Element = return_Element;
             end
         end
-        try
+
         if in && new_Element(1).ElementNo ~= Element(1).ElementNo
-            element_change = true;
-        else
-            element_change = false;
+            [F, Fs1, Fs2] = setInterpFunc(Element,pathDir);
+            if ReversePath
+                F=@(x,y, z) -F(x,y, z);
+                Fs1=@(x,y,z) -Fs1(x,y,z);
+                Fs2=@(x,y,z) -Fs2(x,y,z);
+            end
         end
-        catch
-            aa=1;
-        end
+
         Element = new_Element;
+        w=w+1;
     end
     nancols = ~isnan(p(1,:));
     if nancols > 1
         %To keep plot inside domain
-    nancols = nancols-1;
+        nancols = nancols-1;
     end
-    x_path = p(1,nancols);    
+    x_path = p(1,nancols);
     y_path = p(2,nancols);
     z_path = p(3,nancols);
     intensity = intensity(nancols);
+
+    function [d_point] = stress_interp(p)
+        stress = F(p(1), p(2), p(3));
+        shear1 = Fs1(p(1), p(2), p(3));
+        shear2 = Fs2(p(1), p(2), p(3));
+        d_point =  V(stress, shear1, shear2)*step_size/intensity(w);
+    end
 end
 function [F, Fs1, Fs2] = setInterpFunc(Element, pathDir)
     %Natural interpolation method is used to form a stress function to then
@@ -157,18 +141,20 @@ function [F, Fs1, Fs2] = setInterpFunc(Element, pathDir)
     coordy = [nodes(:).yCoordinate]';
     coordz = [nodes(:).zCoordinate]';
 
-    if strcmpi(pathDir,'x')
-        F = scatteredInterpolant(coordx(:), coordy(:), coordz(:), [nodes(:).xStress]', 'natural');
-        Fs1 =  scatteredInterpolant(coordx, coordy, coordz, [nodes(:).xyStress]', 'natural');
-        Fs2 = scatteredInterpolant(coordx, coordy, coordz, [nodes(:).xzStress]', 'natural');
-    elseif strcmpi(pathDir,'y') 
-        F = scatteredInterpolant(coordx(:), coordy(:), coordz(:), [nodes(:).yStress]', 'natural');
-        Fs1 =  scatteredInterpolant(coordx, coordy, coordz, [nodes(:).xyStress]', 'natural');
-        Fs2 = scatteredInterpolant(coordx, coordy, coordz, [nodes(:).yzStress]', 'natural');
-    elseif strcmpi(pathDir,'z')
-        F = scatteredInterpolant(coordx(:), coordy(:), coordz(:), [nodes(:).zStress]', 'natural');
-        Fs1 = scatteredInterpolant(coordx, coordy, coordz, [nodes(:).yzStress]', 'natural');
-        Fs2 = scatteredInterpolant(coordx, coordy, coordz, [nodes(:).xzStress]', 'natural');
+    switch pathDir
+        case 'X'
+            stress_tensor = [[nodes(:).xStress]', [nodes(:).xyStress]', [nodes(:).xzStress]'];
+            F = scatteredInterpolant(coordx(:), coordy(:), coordz(:), stress_tensor(1,:), 'natural');
+            Fs1 =  scatteredInterpolant(coordx, coordy, coordz, [nodes(:).xyStress]', 'natural');
+            Fs2 = scatteredInterpolant(coordx, coordy, coordz, [nodes(:).xzStress]', 'natural');
+        case 'Y'
+            F = scatteredInterpolant(coordx(:), coordy(:), coordz(:), [nodes(:).yStress]', 'natural');
+            Fs1 =  scatteredInterpolant(coordx, coordy, coordz, [nodes(:).xyStress]', 'natural');
+            Fs2 = scatteredInterpolant(coordx, coordy, coordz, [nodes(:).yzStress]', 'natural');
+        case 'Z'
+            F = scatteredInterpolant(coordx(:), coordy(:), coordz(:), [nodes(:).zStress]', 'natural');
+            Fs1 = scatteredInterpolant(coordx, coordy, coordz, [nodes(:).yzStress]', 'natural');
+            Fs2 = scatteredInterpolant(coordx, coordy, coordz, [nodes(:).xzStress]', 'natural');
     end
 end
 
