@@ -127,11 +127,14 @@ function [x_path, y_path,z_path, intensity] =  RunLibrary_rungekuttaNatInter3D(.
                 Element = return_Element;
             end
         end
-
-        if in && new_Element.ElementNo ~= Element.ElementNo
+        try
+        if in && new_Element(1).ElementNo ~= Element(1).ElementNo
             element_change = true;
         else
             element_change = false;
+        end
+        catch
+            aa=1;
         end
         Element = new_Element;
     end
@@ -175,5 +178,4 @@ function [varargout] = point_in_element(p0, RN, PartArr, N)
     in = any(test);
     Element = PartArr(1).elements(test);
     varargout = {in, Element};
-    plot3(p0(1), p0(2), p0(3), 'r*')
 end

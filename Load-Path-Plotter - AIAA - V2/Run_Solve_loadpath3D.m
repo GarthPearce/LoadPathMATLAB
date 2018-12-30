@@ -164,11 +164,13 @@ function Run_Solve_loadpath3D(sim_dir, seed_dir, save_dir, model_name,path_dir,.
                 end
             end
         end
-        figure
-        hold on
-        Alpha = 0.1;
-        Buffer = 0.35;
-        RunPlot_wireFrame(PartArr,Alpha, Buffer,nodes);
+        % Below is for debugging purposes.
+%         figure
+%         hold on
+%         Alpha = 0.1;
+%         Buffer = 0.35;
+%         RunPlot_wireFrame(PartArr,Alpha, Buffer,nodes);
+        % End of debugging
         clear N
         N(1,:,:) = XC;
         N(2,:,:) = YC;
