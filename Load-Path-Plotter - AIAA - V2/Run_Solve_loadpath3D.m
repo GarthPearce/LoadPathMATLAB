@@ -85,73 +85,75 @@ function Run_Solve_loadpath3D(sim_dir, seed_dir, save_dir, model_name,path_dir,.
         numParts = 1;
         nfaces = 6;
         [irow,numel] = size(PartArr(numParts).elements);
-        RN = zeros(3,nfaces,numel);
-        C = zeros(nfaces,numel);
-        dkfaces = face_def('8_brick');
-        for kk = 1:numel
-            %* Done the centroid calc below
-            elnods = PartArr(1).elements(kk).nodenums;
-            for k = 1:nfaces
-                for kkk = 1:4
-                    kkkk = dkfaces(kkk,k);
-                    kkkkk = elnods(kkkk);
-                    Cdk = nodes.Coordinates;
-                    % Xdk(kkk,k) = nodes(kkkkk).xCoordinate;
-                    % Ydk(kkk,k) = nodes(kkkkk).yCoordinate;
-                    % Zdk(kkk,k) = nodes(kkkkk).zCoordinate;
-                end
-                %Centroid of face
-                XC(k,kk) = 0.0;
-                YC(k,kk) = 0.0;
-                ZC(k,kk) = 0.0;
-                for kkk = 1:4
-                    XC(k,kk) = XC(k,kk) + Xdk(kkk,k)/4.0;
-                    YC(k,kk) = YC(k,kk) + Ydk(kkk,k)/4.0;
-                    ZC(k,kk) = ZC(k,kk) + Zdk(kkk,k)/4.0;
-                end
-            end
-            %CG of  element kk
-            for kkk=1:3
-                CGXYZ(kkk,kk) = 0.0;
-            end
-            for k = 1 : nfaces
-                CGXYZ(1,kk) = CGXYZ(1,kk) + XC(k,kk)/6.0;
-                CGXYZ(2,kk) = CGXYZ(2,kk) + YC(k,kk)/6.0;
-                CGXYZ(3,kk) = CGXYZ(3,kk) + ZC(k,kk)/6.0;
-            end
-            for k = 1:nfaces
-                %Normal to face
-                V1 = Xdk(3,k) - Xdk(1,k);
-                V2 = Ydk(3,k) - Ydk(1,k);
-                V3 = Zdk(3,k) - Zdk(1,k);
-                RL = V1*V1 + V2*V2 + V3*V3;
-                RL = sqrt(RL);
-                V1 = V1/RL;
-                V2 = V2/RL;
-                V3 = V3/RL;
-                W1 = Xdk(4,k) - Xdk(2,k);
-                W2 = Ydk(4,k) - Ydk(2,k);
-                W3 = Zdk(4,k) - Zdk(2,k);
-                RL = W1*W1 + W2*W2 + W3*W3;
-                RL = sqrt(RL);
-                W1 = W1/RL;
-                W2 = W2/RL;
-                W3 = W3/RL;
-                %Normal = V1 X V2
-                RN(1,k,kk) = V2*W3-V3*W2;
-                RN(2,k,kk) = V3*W1-V1*W3;
-                RN(3,k,kk) = V1*W2-V2*W1;
-                V1 = XC(k,kk) - CGXYZ(1,kk);
-                V2 = YC(k,kk) - CGXYZ(2,kk);
-                V3 = ZC(k,kk) - CGXYZ(3,kk);
-                dot = RN(1,k,kk)*V1 + RN(2,k,kk)*V2 + RN(3,k,kk)*V3;
-                if dot < 0;
-                    for kkk = 1:3;
-                        RN(kkk,k,kk) = -RN(kkk,k,kk);
-                    end
-                end
-            end
-        end
+        % RN = zeros(3,nfaces,numel);
+        % C = zeros(nfaces,numel);
+        % dkfaces = face_def('8_brick');
+        % for kk = 1:numel
+        %     %* Done the centroid calc below
+        %     elnods = PartArr(1).elements(kk).nodenums;
+        %     for k = 1:nfaces
+        %         % for kkk = 1:4
+        %         %     kkkk = dkfaces(kkk,k);
+        %         %     kkkkk = elnods(kkkk);
+        %         %     Cdk = nodes.Coordinates;
+        %         %     % Xdk(kkk,k) = nodes(kkkkk).xCoordinate;
+        %         %     % Ydk(kkk,k) = nodes(kkkkk).yCoordinate;
+        %         %     % Zdk(kkk,k) = nodes(kkkkk).zCoordinate;
+        %         % end
+        %         %Centroid of face
+        %         XC(k,kk) = 0.0;
+        %         YC(k,kk) = 0.0;
+        %         ZC(k,kk) = 0.0;
+        %         for kkk = 1:4
+        %             XC(k,kk) = XC(k,kk) + Xdk(kkk,k)/4.0;
+        %             YC(k,kk) = YC(k,kk) + Ydk(kkk,k)/4.0;
+        %             ZC(k,kk) = ZC(k,kk) + Zdk(kkk,k)/4.0;
+        %         end
+        %     end
+        %     %CG of  element kk
+        %     for kkk=1:3
+        %         CGXYZ(kkk,kk) = 0.0;
+        %     end
+        %     %* Element Centroid
+        %     for k = 1 : nfaces
+        %         CGXYZ(1,kk) = CGXYZ(1,kk) + XC(k,kk)/6.0;
+        %         CGXYZ(2,kk) = CGXYZ(2,kk) + YC(k,kk)/6.0;
+        %         CGXYZ(3,kk) = CGXYZ(3,kk) + ZC(k,kk)/6.0;
+        %     end
+        %     %* In plane vectors V and W crossed to get the normal of the face, N.
+        %     for k = 1:nfaces
+        %         %Normal to face
+        %         V1 = Xdk(3,k) - Xdk(1,k);
+        %         V2 = Ydk(3,k) - Ydk(1,k);
+        %         V3 = Zdk(3,k) - Zdk(1,k);
+        %         RL = V1*V1 + V2*V2 + V3*V3;
+        %         RL = sqrt(RL);
+        %         V1 = V1/RL;
+        %         V2 = V2/RL;
+        %         V3 = V3/RL;
+        %         W1 = Xdk(4,k) - Xdk(2,k);
+        %         W2 = Ydk(4,k) - Ydk(2,k);
+        %         W3 = Zdk(4,k) - Zdk(2,k);
+        %         RL = W1*W1 + W2*W2 + W3*W3;
+        %         RL = sqrt(RL);
+        %         W1 = W1/RL;
+        %         W2 = W2/RL;
+        %         W3 = W3/RL;
+        %         %Normal = V1 X V2
+        %         RN(1,k,kk) = V2*W3-V3*W2;
+        %         RN(2,k,kk) = V3*W1-V1*W3;
+        %         RN(3,k,kk) = V1*W2-V2*W1;
+        %         V1 = XC(k,kk) - CGXYZ(1,kk);
+        %         V2 = YC(k,kk) - CGXYZ(2,kk);
+        %         V3 = ZC(k,kk) - CGXYZ(3,kk);
+        %         dot = RN(1,k,kk)*V1 + RN(2,k,kk)*V2 + RN(3,k,kk)*V3;
+        %         if dot < 0;
+        %             for kkk = 1:3;
+        %                 RN(kkk,k,kk) = -RN(kkk,k,kk);
+        %             end
+        %         end
+        %     end
+        % end
         % Below is for debugging purposes.
 %         figure
 %         hold on
@@ -159,10 +161,10 @@ function Run_Solve_loadpath3D(sim_dir, seed_dir, save_dir, model_name,path_dir,.
 %         Buffer = 0.35;
 %         RunPlot_wireFrame(PartArr,Alpha, Buffer,nodes);
         % End of debugging
-        clear N
-        N(1,:,:) = XC;
-        N(2,:,:) = YC;
-        N(3,:,:) = ZC;
+        % clear N
+        % N(1,:,:) = XC;
+        % N(2,:,:) = YC;
+        % N(3,:,:) = ZC;
         %% ******************  If numSeeds == 0 Define Seeds based on maximum pointing vector **************************
         %% ******************  Defines seeds at peak of pulse for transient solution          **************************
         if numSeeds == 0
@@ -231,7 +233,7 @@ function Run_Solve_loadpath3D(sim_dir, seed_dir, save_dir, model_name,path_dir,.
 
     %% ****************  Load Path Generation  ******************************
     %Initialise data containers for load paths
-    
+
     Paths(numSeeds).X.forward = [];
     Paths(numSeeds).Y.forward = [];
     Paths(numSeeds).Z.forward = [];
@@ -240,7 +242,7 @@ function Run_Solve_loadpath3D(sim_dir, seed_dir, save_dir, model_name,path_dir,.
     Paths(numSeeds).Y.total = [];
     Paths(numSeeds).Z.total = [];
     Paths(numSeeds).I.total = [];
-        
+
     switch parallel
         %Parallel computation if load paths
         case 1
@@ -254,7 +256,7 @@ function Run_Solve_loadpath3D(sim_dir, seed_dir, save_dir, model_name,path_dir,.
                     %Main work horse module - Runge Kutta
 
                     [x, y, z, intense] = RunLibrary_rungekuttaNatInter3D(xseed(i),...
-                        yseed(i),zseed(i), PartArr, path_dir, nodePerEl,path_length,false,step_size,wb,nodes,RN,XC,YC,ZC);                        
+                        yseed(i),zseed(i), PartArr, path_dir, nodePerEl,path_length,false,step_size,wb,nodes,RN,XC,YC,ZC);
                     if isempty(x)
                         fprintf('Path %i unsuccessful\n',i)
                         continue
@@ -267,15 +269,15 @@ function Run_Solve_loadpath3D(sim_dir, seed_dir, save_dir, model_name,path_dir,.
 
                      [x, y, z, intense ] = ...
                         RunLibrary_rungekuttaNatInter3D(xseed(i), yseed(i),...
-                        zseed(i), PartArr, path_dir, nodePerEl,path_length, true,step_size, wb,RN,N);                       
+                        zseed(i), PartArr, path_dir, nodePerEl,path_length, true,step_size, wb,RN,N);
                     Paths(i).X.total = [fliplr(x), Paths(i).X.forward];
                     Paths(i).Y.total = [fliplr(y), Paths(i).Y.forward];
                     Paths(i).Z.total = [fliplr(z), Paths(i).Z.forward];
                     Paths(i).I.total = [fliplr(intense), Paths(i).I.forward];
-                    [mdk,ndk] = size(intense);                                               
-                    fprintf('Path %i done\n',i);                        
+                    [mdk,ndk] = size(intense);
+                    fprintf('Path %i done\n',i);
                 end
-                current_time = current_time +80;   
+                current_time = current_time +80;
     	  % ******************   Single thread processing
         case 0
             for i = 1:numSeeds
@@ -290,7 +292,7 @@ function Run_Solve_loadpath3D(sim_dir, seed_dir, save_dir, model_name,path_dir,.
                 reverse_path = false;
                 [dkx, dky, dkz, dkintense] = RunLibrary_rungekuttaNatInter3D(...
                     xseed(i),yseed(i),zseed(i), PartArr, path_dir,...
-                    path_length,reverse_path,step_size, wb,RN,N);
+                    path_length,reverse_path,step_size, wb);
                 if isempty(dkx)
                     fprintf('Path %i unsuccessful\n',i)
                     continue
@@ -327,7 +329,7 @@ function Run_Solve_loadpath3D(sim_dir, seed_dir, save_dir, model_name,path_dir,.
                     y = dky;
                     z = dkz;
                     intense = dkintense;
-                end  
+                end
 
                 Paths(i).X.forward = x;
                 Paths(i).Y.forward = y;
@@ -337,7 +339,7 @@ function Run_Solve_loadpath3D(sim_dir, seed_dir, save_dir, model_name,path_dir,.
                 reverse_path = true;
                 [dkx, dky, dkz, dkintense ] = RunLibrary_rungekuttaNatInter3D(...
                     xseed(i), yseed(i), zseed(i), PartArr, path_dir,...
-                    path_length,reverse_path,step_size, wb,RN,N);
+                    path_length,reverse_path,step_size, wb);
 
                 %Next block added by dk to only plot peak of pulse
 

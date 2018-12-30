@@ -1,6 +1,6 @@
 function [x_path, y_path,z_path, intensity] =  RunLibrary_rungekuttaNatInter3D(...
     xseed,yseed,zseed, PartArr, pathDir,maxPathLength, ReversePath,...
-    step_size, wb, RN, N)
+    step_size, wb)
 
     %p0 is initial seed point. Projection multiplier is used to 'jump' gaps
     %between parts in the model. It will project the path from onee part to
@@ -25,7 +25,7 @@ function [x_path, y_path,z_path, intensity] =  RunLibrary_rungekuttaNatInter3D(.
     end
     %Locate the seed point in the model globally.
 
-    [in, Element] = point_in_element(p0, RN, PartArr, N);
+    [in, Element] = point_in_element(p0, PartArr);
 
     if in
         %Get and set stress function
@@ -84,7 +84,7 @@ function [x_path, y_path,z_path, intensity] =  RunLibrary_rungekuttaNatInter3D(.
         p0 =p0 + 1/6 * (dp1 + 2*dp2 + 2*dp3 +dp4);
 
 	    %Locate element that the point is inside
-        [in, new_Element] = point_in_element(p0, RN, PartArr, N);
+        [in, new_Element] = point_in_element(p0, PartArr);
 
         %If the point is outside the local radius, we attempt to find it
         %globablly. The path is projected along its last vector in an
@@ -94,7 +94,7 @@ function [x_path, y_path,z_path, intensity] =  RunLibrary_rungekuttaNatInter3D(.
             extension = 1;
             while ~in && extension < projectionMultiplier+1
                 R = (p0 - p(:,w)) * extension * 2 + p0;
-                [in, Element] = point_in_element(R, RN, PartArr, N);
+                [in, Element] = point_in_element(R, PartArr);
                 extension = extension+1;
             end
             if in
@@ -158,9 +158,9 @@ function [F, Fs1, Fs2] = setInterpFunc(Element, pathDir)
     end
 end
 
-function [varargout] = point_in_element(p0, RN, PartArr, N)
-    VP = -N + p0;
-    test = ~any(dot(RN,VP,1)>0,2);
+function [varargout] = point_in_element(p0, PartArr)
+    % VP = ;
+    test = ~any(dot(PartArr.face_centroids,-PartArr.face_centroids + p0,1)>0,2);
     in = any(test);
     Element = PartArr(1).elements(test);
     varargout = {in, Element};

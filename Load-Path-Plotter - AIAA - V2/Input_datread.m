@@ -57,52 +57,64 @@ function [numNodes,PartArr] = Input_datread(fpath, nodes)
     PartArr(numParts).range = [];
     PartArr(numParts).span = numel;
     face_centroids = zeros(3,6,numel);
+    face_normals = zeros(3,6,numel);
+    element_centroid = zeros(numel,3);
     counter=1;
+    V = zeros(3,6);
+    W = zeros(3,6);
     
     %max_rad stores the maximum distance between any two nodes within an
     %element thats in the structure. This radius is used later to filter
     % unecessary tests.
-    max_rad = 0;     
+    max_rad = 0;
     while ~strcmpi(linetest, '-1')
-        
         nums = strsplit(linetest);
         nums = str2double(nums(end-numNodes:end));
-        
         if start
             start = false;
             stidx = nums(1);
             PartArr(numParts).range(1) = stidx;
         end
-        
+
         nodes_nums = nums(2:end);
-        
+
         %Extracting the corresponding node objects
         element_nodes = nodes(nodes_nums);
         dkfaces = face_def('8_brick');
-        Cdk = repmat(element_nodes.Coordinates, [1,1, size(dkfaces, 2)]);
-        Cdk = reshape(Cdk(:,dkfaces), [3, size(dkfaces)]);
-        C = mean(Cdk,2);
-        C = reshape( C,[size( C,1), size( C,3)])
-        face_centroids(:,:, counter) = C;
+        face_verticies = repmat([element_nodes.Coordinates],1,1, size(dkfaces, 2));
+        face_verticies = reshape(face_verticies(:,dkfaces), [3, size(dkfaces)]);
+        f_centroid = mean(face_verticies,2);
+        f_centroid = reshape( f_centroid,[size( f_centroid,1), size( f_centroid,3)]);
+        face_centroids(:,:, counter) = f_centroid;
+        element_centroid(counter, :) = mean(f_centroid,2);
+        V(:,:) = face_verticies(:,1,:) - face_verticies(:,3,:);
+        V = V./vecnorm(V);
+        W(:,:) = face_verticies(:,2,:) - face_verticies(:,4,:);
+        W = W./vecnorm(W);
+        face_normal = cross(V,W);
+        Q = f_centroid - element_centroid(counter, :)';
+        direction_check = dot(face_normal, Q);
+        face_normal(direction_check<0) = -face_normal(direction_check<0);
+        face_normals(:,:, counter) = face_normal;
         %Creating and asssigning nodes to the element object
         PartArr(numParts).elements(counter) = Define_Element1(nums(1), element_nodes,1);
-        
+
         %Storing which part the element belongs to
         PartArr(numParts).elements(counter).part_num = numParts;
         %Stores the radius of influence for the element
         sphere_influence_tracker = PartArr(numParts).elements(counter).sphere_radius;
-        
+
         if sphere_influence_tracker >= max_rad
             max_rad = sphere_influence_tracker;
         end
 
         linetest = fgetl(datafile);
-        counter =counter+1;
-        
+        counter = counter+1;
+
         if skipLine
             linetest = fgetl(datafile);
         end
-        
+
         %This code just catches the end of a part definition in the ds.dat
         %file and progresses until all parts are populated.
         if strcmpi(linetest, '-1')
@@ -121,7 +133,7 @@ function [numNodes,PartArr] = Input_datread(fpath, nodes)
                     linetest = fgetl(datafile);
                     temp = strsplit(linetest);
                 end
-                start = true; 
+                start = true;
                 counter = 1;
             else
                 linetest = '-1';
@@ -131,6 +143,8 @@ function [numNodes,PartArr] = Input_datread(fpath, nodes)
     %The max rad is used as the first sphere of influence radius, then
     %local radii are used.
     PartArr(1).maxRadius = max_rad;
+    PartArr(1).face_normals = face_normals;
+    PartArr(1).face_centroids = face_centroids;
     fclose(datafile);
 end
 function [skipLine, numNodes, numElements, type] = caseCheck(linetest)
