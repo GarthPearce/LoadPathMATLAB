@@ -56,7 +56,6 @@ function [numNodes,PartArr] = Input_datread(fpath, nodes)
     PartArr(numParts).elements(numel) = Define_Element1();
     PartArr(numParts).range = [];
     PartArr(numParts).span = numel;
-    face_centroids = zeros(3,6,numel);
     counter=1;
     
     %max_rad stores the maximum distance between any two nodes within an
@@ -79,11 +78,8 @@ function [numNodes,PartArr] = Input_datread(fpath, nodes)
         %Extracting the corresponding node objects
         element_nodes = nodes(nodes_nums);
         dkfaces = face_def('8_brick');
-        Cdk = repmat(element_nodes.Coordinates, [1,1, size(dkfaces, 2)]);
-        Cdk = reshape(Cdk(:,dkfaces), [3, size(dkfaces)]);
-        C = mean(Cdk,2);
-        C = reshape( C,[size( C,1), size( C,3)])
-        face_centroids(:,:, counter) = C;
+        Cdk = [element_nodes(:).Coordinates];
+        C = mean(cumsum(Cdk(:,dkfaces')));
         %Creating and asssigning nodes to the element object
         PartArr(numParts).elements(counter) = Define_Element1(nums(1), element_nodes,1);
         

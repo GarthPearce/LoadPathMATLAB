@@ -89,6 +89,7 @@ function Run_Solve_loadpath3D(sim_dir, seed_dir, save_dir, model_name,path_dir,.
         C = zeros(nfaces,numel);
         dkfaces = face_def('8_brick');
         for kk = 1:numel
+            %* Done the centroid calc below
             elnods = PartArr(1).elements(kk).nodenums;
             for k = 1:nfaces
                 for kkk = 1:4
@@ -492,17 +493,5 @@ function [] = modelPlot3D(x_paths,y_paths,z_paths,Intensity,PartArr,nodes,pulse)
     %Turn off plot of colorbar
     colorbar;
 end
-function [faces] = face_def(elem_type)
-    switch elem_type
-        case '8_brick'
-            I = 1; J = 2; K = 3; L = 4; M = 5; N = 6; O = 7; P = 8;
-            faces = [...
-                [J;I;L;K],...
-                [I;J;N;M],...
-                [J;K;O;N],...
-                [K;L;P;O],...
-                [L;I;M;P],...
-                [M;N;O;P]];
-    end
-end
+
 
