@@ -2,7 +2,7 @@ function Run_Solve_loadpath3D(sim_dir, seed_dir, save_dir, model_name,path_dir,.
                     pulse, parallel, newPDF, recompute, step_size, path_length,...
                     plot_minimum_vector, plot_maximum_vector)
 %% ********************  House Keeping   ******************************
-
+tic
 %TODO: Parallel computing curently buggy due to recent changes. Need to correct the function inputs and include the transient code.
 % Closes previously opened waitbars
     F = findall(0,'type','figure','tag','TMWWaitbar');
@@ -364,6 +364,7 @@ function Run_Solve_loadpath3D(sim_dir, seed_dir, save_dir, model_name,path_dir,.
     fprintf('Load paths complete.\n')
 
     %%********************************End of Computation******************************
+    toc
 end
 function [] = modelPlot3D(x_paths,y_paths,z_paths,Intensity,PartArr,nodes,pulse)
     %Just some custom settings for plotting the paths
