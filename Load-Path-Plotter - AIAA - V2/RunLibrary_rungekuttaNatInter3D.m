@@ -70,18 +70,18 @@ function [x_path, y_path,z_path, intensity] =  RunLibrary_rungekuttaNatInter3D(.
         %Calculate new points:
 
         %Runge-Kutta
-        dp1 = stress_interp(p0s);
+        dp1 = stress_interp(p0);
         p1 = p0 + dp1;
 
-        dp2 = stress_interp(p1)
+        dp2 = stress_interp(p1);
         p2 = p0 + 0.5*dp2;
 
-        dp2 = stress_interp(p2)
+        dp3 = stress_interp(p2);
         p3 = p0 + 0.5*dp3;
 
-        dp4 = stress_interp(p3)
+        dp4 = stress_interp(p3);
 
-        p0 =p0 + 1/6 * (dp1 + 2*dp2 + 2*dp3 +dp4);
+        p0 = p0 + 1/6 * (dp1 + 2*dp2 + 2*dp3 + dp4);
 
 	    %Locate element that the point is inside
         [in, new_Element] = point_in_element(p0, PartArr);
@@ -94,12 +94,12 @@ function [x_path, y_path,z_path, intensity] =  RunLibrary_rungekuttaNatInter3D(.
             extension = 1;
             while ~in && extension < projectionMultiplier+1
                 R = (p0 - p(:,w)) * extension * 2 + p0;
-                [in, Element] = point_in_element(R, PartArr);
+                [in, new_Element] = point_in_element(R, PartArr);
                 extension = extension+1;
             end
             if in
                 p0 = R;
-                Element = return_Element;
+                Element = new_Element;
             end
         end
 
@@ -144,24 +144,19 @@ function [F, Fs1, Fs2] = setInterpFunc(Element, pathDir)
     switch pathDir
         case 'X'
             stress_tensor = [[nodes(:).xStress]', [nodes(:).xyStress]', [nodes(:).xzStress]'];
-            F = scatteredInterpolant(coordx(:), coordy(:), coordz(:), stress_tensor(1,:), 'natural');
-            Fs1 =  scatteredInterpolant(coordx, coordy, coordz, [nodes(:).xyStress]', 'natural');
-            Fs2 = scatteredInterpolant(coordx, coordy, coordz, [nodes(:).xzStress]', 'natural');
         case 'Y'
-            F = scatteredInterpolant(coordx(:), coordy(:), coordz(:), [nodes(:).yStress]', 'natural');
-            Fs1 =  scatteredInterpolant(coordx, coordy, coordz, [nodes(:).xyStress]', 'natural');
-            Fs2 = scatteredInterpolant(coordx, coordy, coordz, [nodes(:).yzStress]', 'natural');
+            stress_tensor = [[nodes(:).yStress]', [nodes(:).xyStress]', [nodes(:).yzStress]'];
         case 'Z'
-            F = scatteredInterpolant(coordx(:), coordy(:), coordz(:), [nodes(:).zStress]', 'natural');
-            Fs1 = scatteredInterpolant(coordx, coordy, coordz, [nodes(:).yzStress]', 'natural');
-            Fs2 = scatteredInterpolant(coordx, coordy, coordz, [nodes(:).xzStress]', 'natural');
+            stress_tensor = [[nodes(:).zStress]', [nodes(:).yzStress]', [nodes(:).xzStress]'];
     end
+    F = scatteredInterpolant(coordx, coordy, coordz, stress_tensor(:,1), 'natural');
+    Fs1 =  scatteredInterpolant(coordx, coordy, coordz, stress_tensor(:,2), 'natural');
+    Fs2 = scatteredInterpolant(coordx, coordy, coordz, stress_tensor(:,3), 'natural');
 end
 
 function [varargout] = point_in_element(p0, PartArr)
-    % VP = ;
-    test = ~any(dot(PartArr.face_centroids,-PartArr.face_centroids + p0,1)>0,2);
-    in = any(test);
-    Element = PartArr(1).elements(test);
+    in_test = ~any(dot(PartArr.face_normals,-PartArr.face_centroids + p0,1)>0,2);
+    in = any(in_test);
+    Element = PartArr(1).elements(in_test);
     varargout = {in, Element};
 end
