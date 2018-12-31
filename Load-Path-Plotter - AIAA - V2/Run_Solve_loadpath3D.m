@@ -175,8 +175,9 @@ tic
                     warning('off','MATLAB:scatteredInterpolant:DupPtsAvValuesWarnId');
                     %Main work horse module - Runge Kutta
 
-                    [x, y, z, intense] = RunLibrary_rungekuttaNatInter3D(xseed(i),...
-                        yseed(i),zseed(i), PartArr, path_dir, nodePerEl,path_length,false,step_size,wb,nodes,RN,XC,YC,ZC);
+                    [x, y, z, intense] = RunLibrary_rungekuttaNatInter3D(...
+                        xseed(i),yseed(i),zseed(i), PartArr, path_dir,...
+                        path_length,reverse_path,step_size, wb);
                     if isempty(x)
                         fprintf('Path %i unsuccessful\n',i)
                         continue
@@ -187,9 +188,9 @@ tic
                     Paths(i).Z.forward = z;
                     Paths(i).I.forward = intense;
 
-                     [x, y, z, intense ] = ...
-                        RunLibrary_rungekuttaNatInter3D(xseed(i), yseed(i),...
-                        zseed(i), PartArr, path_dir, nodePerEl,path_length, true,step_size, wb,RN,N);
+                     [x, y, z, intense ] = RunLibrary_rungekuttaNatInter3D(...
+                        xseed(i),yseed(i),zseed(i), PartArr, path_dir,...
+                        path_length,reverse_path,step_size, wb);
                     Paths(i).X.total = [fliplr(x), Paths(i).X.forward];
                     Paths(i).Y.total = [fliplr(y), Paths(i).Y.forward];
                     Paths(i).Z.total = [fliplr(z), Paths(i).Z.forward];
@@ -206,7 +207,6 @@ tic
                     delete(wb)
                     return
                 end
-
                 waitbar(current_time/total_time,wb,sprintf('Seed %i of %i Computing', i, numSeeds))
                 warning('off','MATLAB:scatteredInterpolant:DupPtsAvValuesWarnId');
                 reverse_path = false;
