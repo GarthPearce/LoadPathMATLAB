@@ -29,7 +29,7 @@ function [x_path, y_path,z_path, intensity] =  RunLibrary_rungekuttaNatInter3D(.
 
     if in
         %Get and set stress function
-        [F, Fs1, Fs2] = setInterpFunc(Element, pathDir);
+        [F, Fs1, Fs2] = setInterpFunc(Element, pathDir, ReversePath);
     else
         fprintf('Seed Point (%f, %f, %f) not in solution domain\n', xseed, yseed, zseed);
         x_path = [];
@@ -43,12 +43,6 @@ function [x_path, y_path,z_path, intensity] =  RunLibrary_rungekuttaNatInter3D(.
     intensity = NaN(1,maxPathLength,'double');
     w = 1;
     element_change = false;
-    %Flips the stress function when the backwards path is being computed.
-    if ReversePath
-        F=@(x,y, z) -F(x,y, z);
-        Fs1=@(x,y,z) -Fs1(x,y,z);
-        Fs2=@(x,y,z) -Fs2(x,y,z);
-    end
 
     while w <= maxPathLength && in ~= false
         %Terminate program if cancel button is pressed
@@ -90,26 +84,11 @@ function [x_path, y_path,z_path, intensity] =  RunLibrary_rungekuttaNatInter3D(.
         %globablly. The path is projected along its last vector in an
         %attempt to get it to 'land' in another element for the case where
         %its in a small gap between elements.
-        if ~in
-            extension = 1;
-            while ~in && extension < projectionMultiplier+1
-                R = (p0 - p(:,w)) * extension * 2 + p0;
-                [in, new_Element] = point_in_element(R, PartArr);
-                extension = extension+1;
-            end
-            if in
-                p0 = R;
-                Element = new_Element;
-            end
-        end
+
+        % [in, p0, Element] = projection(in, p0, Element)
 
         if in && new_Element(1).ElementNo ~= Element(1).ElementNo
-            [F, Fs1, Fs2] = setInterpFunc(Element,pathDir);
-            if ReversePath
-                F=@(x,y, z) -F(x,y, z);
-                Fs1=@(x,y,z) -Fs1(x,y,z);
-                Fs2=@(x,y,z) -Fs2(x,y,z);
-            end
+            [F, Fs1, Fs2] = setInterpFunc(Element,pathDir, ReversePath);
         end
 
         Element = new_Element;
@@ -132,7 +111,7 @@ function [x_path, y_path,z_path, intensity] =  RunLibrary_rungekuttaNatInter3D(.
         d_point =  V(stress, shear1, shear2)*step_size/intensity(w);
     end
 end
-function [F, Fs1, Fs2] = setInterpFunc(Element, pathDir)
+function [F, Fs1, Fs2] = setInterpFunc(Element, pathDir, ReversePath)
     %Natural interpolation method is used to form a stress function to then
     %compute the paths.
     surr_elements = RunLibrary_surrounding_elemnts(Element, Element);
@@ -140,6 +119,12 @@ function [F, Fs1, Fs2] = setInterpFunc(Element, pathDir)
     coordx = [nodes(:).xCoordinate]';
     coordy = [nodes(:).yCoordinate]';
     coordz = [nodes(:).zCoordinate]';
+
+    %Flips the stress function when the backwards path is being computed.
+    rev_mult = 1;
+    if ReversePath
+        rev_mult = -1;
+    end
 
     switch pathDir
         case 'X'
@@ -149,9 +134,9 @@ function [F, Fs1, Fs2] = setInterpFunc(Element, pathDir)
         case 'Z'
             stress_tensor = [[nodes(:).zStress]', [nodes(:).yzStress]', [nodes(:).xzStress]'];
     end
-    F = scatteredInterpolant(coordx, coordy, coordz, stress_tensor(:,1), 'natural');
-    Fs1 =  scatteredInterpolant(coordx, coordy, coordz, stress_tensor(:,2), 'natural');
-    Fs2 = scatteredInterpolant(coordx, coordy, coordz, stress_tensor(:,3), 'natural');
+    F = rev_mult*scatteredInterpolant(coordx, coordy, coordz, stress_tensor(:,1), 'natural');
+    Fs1 = rev_mult*scatteredInterpolant(coordx, coordy, coordz, stress_tensor(:,2), 'natural');
+    Fs2 = rev_mult*scatteredInterpolant(coordx, coordy, coordz, stress_tensor(:,3), 'natural');
 end
 
 function [varargout] = point_in_element(p0, PartArr)
@@ -159,4 +144,20 @@ function [varargout] = point_in_element(p0, PartArr)
     in = any(in_test);
     Element = PartArr(1).elements(in_test);
     varargout = {in, Element};
+end
+
+function [varargout] = projection(in, p0, Element)
+    if ~in
+        extension = 1;
+        while ~in && extension < projectionMultiplier+1
+            R = (p0 - p(:,w)) * extension * 2 + p0;
+            [in, new_Element] = point_in_element(R, PartArr);
+            extension = extension+1;
+        end
+        if in
+            p0 = R;
+            Element = new_Element;
+        end
+    end
+    varargout = {in, p0, Element};
 end

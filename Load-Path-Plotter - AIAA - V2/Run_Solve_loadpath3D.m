@@ -3,7 +3,6 @@ function Run_Solve_loadpath3D(sim_dir, seed_dir, save_dir, model_name,path_dir,.
                     plot_minimum_vector, plot_maximum_vector)
 %% ********************  House Keeping   ******************************
 tic
-%TODO: Parallel computing curently buggy due to recent changes. Need to correct the function inputs and include the transient code.
 % Closes previously opened waitbars
     F = findall(0,'type','figure','tag','TMWWaitbar');
     delete(F);
@@ -39,7 +38,7 @@ tic
         path_separator = '/';
     elseif ispc
         path_separator = '\';
-        system(['taskkill /fi "WINDOWTITLE eq ', model_name,'.pdf"']);
+        system(strjoin(['taskkill /fi "WINDOWTITLE eq ', model_name,'.pdf"'],''));
     end
 
     nodei = strjoin([sim_dir path_separator 'nodeInfo.txt'],'');
@@ -75,13 +74,14 @@ tic
         current_time = current_time + data_read_time/3;
 
         fprintf('Elements constructed, directories being created and data being saved.\n')
-        mkdir(strjoin([save_dir path_separator 'Path Data'],''))
-        save(strjoin([save_dir path_separator 'Path Data' path_separator 'data_' model_data_name '.mat'],''),'PartArr','nodes', 'nodePerEl');
-
+        ename = 'Path Data';
+        dname = char(save_dir);
+        mkdir(dname,ename);
+        save(strjoin([dname path_separator ename path_separator 'data_' model_data_name '.mat'],''),'PartArr','nodes', 'nodePerEl');
     %% ******************  Define quadrilateral faces of elements **************************
     %% ******************  and check face normal is positive pointing out  **************
     %% ******************  Only works for Hex8 Bricks
-    %TODO: I think this should almost be apart of pre-processing. Looping over the elements again can surely be done in the element generation part of the program.
+
         numParts = 1;
         [irow,numel] = size(PartArr(numParts).elements);
 
@@ -174,7 +174,7 @@ tic
                     fprintf('Starting path %i\n',i)
                     warning('off','MATLAB:scatteredInterpolant:DupPtsAvValuesWarnId');
                     %Main work horse module - Runge Kutta
-
+                    reverse_path = false;
                     [x, y, z, intense] = RunLibrary_rungekuttaNatInter3D(...
                         xseed(i),yseed(i),zseed(i), PartArr, path_dir,...
                         path_length,reverse_path,step_size, wb);
@@ -182,7 +182,7 @@ tic
                         fprintf('Path %i unsuccessful\n',i)
                         continue
                     end
-
+                    reverse_path = true;
                     Paths(i).X.forward = x;
                     Paths(i).Y.forward = y;
                     Paths(i).Z.forward = z;
@@ -232,9 +232,9 @@ tic
                     kkdk = 0;
                     [mdk,ndk] = size(dkintense);
                     while kdk < ndk;
-                        %Hard wired to plot path only if magnitude of pointing vector > 20
-                        %pointing vector > 20.0
-                        if dkintense(kdk) > 20.0;
+                        %Plot path only if magnitude of pointing vector >
+                        %minimum define in input
+                        if dkintense(kdk) > plot_minimum_vector;
                             kkdk = kkdk+1;
                             x(kkdk) = dkx(kdk);
                             y(kkdk) = dky(kdk);
@@ -273,7 +273,7 @@ tic
                     z = [];
                     intense = [];
                     kdk = 1;
-                    kkdk = 0;                      
+                    kkdk = 0;
                     [mdk,ndk] = size(dkintense);
                     while kdk < ndk;
                         %Only plot path if magnitude of pointing
@@ -332,7 +332,9 @@ tic
 
     modelPlot3D([Paths(:).X],[Paths(:).Y],[Paths(:).Z],[Paths(:).I],PartArr,nodes,pulse)
     % Create new directory to store the output plots
-    mkdir(save_dir,[path_separator 'Path Plots'])
+    ename = 'Path Plots';
+    dname = char(save_dir);
+    mkdir(dname,ename);
     %********************Name of 'bmp' file hard-wired ************************
     %saveas(fig,'examples\Example1 - Isotropic Plate with Loaded Hole\Path Plots\myplot.bmp')
     saveas(fig,strjoin([save_dir path_separator 'Path Plots' path_separator model_name, '.bmp'],''))
@@ -416,5 +418,3 @@ function [] = modelPlot3D(x_paths,y_paths,z_paths,Intensity,PartArr,nodes,pulse)
     %Turn off plot of colorbar
     colorbar;
 end
-
-
