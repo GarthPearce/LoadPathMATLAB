@@ -120,12 +120,6 @@ function [F, Fs1, Fs2] = setInterpFunc(Element, pathDir, ReversePath)
     coordy = [nodes(:).yCoordinate]';
     coordz = [nodes(:).zCoordinate]';
 
-    %Flips the stress function when the backwards path is being computed.
-    rev_mult = 1;
-    if ReversePath
-        rev_mult = -1;
-    end
-
     switch pathDir
         case 'X'
             stress_tensor = [[nodes(:).xStress]', [nodes(:).xyStress]', [nodes(:).xzStress]'];
@@ -134,9 +128,15 @@ function [F, Fs1, Fs2] = setInterpFunc(Element, pathDir, ReversePath)
         case 'Z'
             stress_tensor = [[nodes(:).zStress]', [nodes(:).yzStress]', [nodes(:).xzStress]'];
     end
-    F = rev_mult*scatteredInterpolant(coordx, coordy, coordz, stress_tensor(:,1), 'natural');
-    Fs1 = rev_mult*scatteredInterpolant(coordx, coordy, coordz, stress_tensor(:,2), 'natural');
-    Fs2 = rev_mult*scatteredInterpolant(coordx, coordy, coordz, stress_tensor(:,3), 'natural');
+    F = scatteredInterpolant(coordx, coordy, coordz, stress_tensor(:,1), 'natural');
+    Fs1 = scatteredInterpolant(coordx, coordy, coordz, stress_tensor(:,2), 'natural');
+    Fs2 = scatteredInterpolant(coordx, coordy, coordz, stress_tensor(:,3), 'natural');
+    %Flips the stress function when the backwards path is being computed.
+    if ReversePath
+        F=@(x,y, z) -F(x,y, z);
+        Fs1=@(x,y,z) -Fs1(x,y,z);
+        Fs2=@(x,y,z) -Fs2(x,y,z);
+    end
 end
 
 function [varargout] = point_in_element(p0, PartArr)
