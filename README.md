@@ -10,7 +10,7 @@ The repository can be cloned or downloaded from GitHub:
 
 Once the files have been downloaded, change to the directory where the files are contained and run the &quot;LoadPathGUI.m&quot; file. You will see the GUI pop up:
 
-![GUI_1](../markdown/img/gui.png)
+![GUI_1](../markdown/img/gui1.png)
 
 # Example Run
 
