@@ -23,7 +23,7 @@ function varargout = LoadPathGUI(varargin)
 
 % Edit the above text to modify the response to help LoadPathGUI
 
-% Last Modified by GUIDE v2.5 13-Dec-2018 21:12:42
+% Last Modified by GUIDE v2.5 03-Jan-2019 10:37:17
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -57,7 +57,7 @@ function LoadPathGUI_OpeningFcn(hObject, eventdata, handles, varargin)
 handles.output = hObject;
 
 % Update handles structure
-set(handles.checkbox1, 'value',1)
+set(handles.checkbox1, 'value',0)
 set(handles.edit3, 'String', 'Load Path Model 1')
 set(handles.edit1, 'String', 'C:\')
 set(handles.edit2, 'String', 'C:\')
@@ -91,6 +91,15 @@ function cmd_getDir_Callback(hObject, eventdata, handles)
     handles.cmd_getDir.UserData = sim_folder_check(folder_name);
 
 
+function edit1_Callback(hObject, eventdata, handles)
+% hObject    handle to edit1 (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: get(hObject,'String') returns contents of edit1 as text
+%        str2double(get(hObject,'String')) returns contents of edit1 as a double
+
+
 % --- Executes during object creation, after setting all properties.
 function edit1_CreateFcn(hObject, eventdata, handles)
 % hObject    handle to edit1 (see GCBO)
@@ -104,6 +113,17 @@ if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgr
 end
 
 
+% --- Executes on button press in checkbox1.
+function checkbox1_Callback(hObject, eventdata, handles)
+% hObject    handle to checkbox1 (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hint: get(hObject,'Value') returns toggle state of checkbox1
+
+
+
+% --------------------------------------------------------------------
 
 
 % --- Executes on selection change in popupm0enu1.
@@ -184,6 +204,24 @@ function popupmenu2_CreateFcn(hObject, eventdata, handles)
 if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
     set(hObject,'BackgroundColor','white');
 end
+
+
+% --- Executes on button press in checkbox2.
+function checkbox2_Callback(hObject, eventdata, handles)
+% hObject    handle to checkbox2 (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hint: get(hObject,'Value') returns toggle state of checkbox2
+
+
+% --- Executes on button press in checkbox3.
+function checkbox3_Callback(hObject, eventdata, handles)
+% hObject    handle to checkbox3 (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hint: get(hObject,'Value') returns toggle state of checkbox3
 
 
 % --- Executes on button press in pushbutton5.
@@ -337,6 +375,16 @@ function help_dialog_settings(handle)
     new_pos_y = (chi_extent(4)+chi_extent(2));
     handle.Position(3) = new_pos_x+buffer;
     handle.Position(4) = new_pos_y+buffer;
+    
+
+
+function edit3_Callback(hObject, eventdata, handles)
+% hObject    handle to edit3 (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+% Hints: get(hObject,'String') returns contents of edit3 as text
+%        str2double(get(hObject,'String')) returns contents of edit3 as a double
 
 
 % --- Executes during object creation, after setting all properties.
@@ -630,6 +678,18 @@ function [ret] = step_size_error_check(hObject)
         help_dialog_settings(e)
     end
     ret = 1;
+function [ret] = plot_magnitude_check(hObject)
+    ret = 0;
+    if isempty(get(hObject,'String'))
+        return
+    end
+    step = str2double(get(hObject,'String'));
+    if isnan(step)
+        errmsg = ['The magnitude must be a real number.'];
+        e = errordlg(errmsg,'Step Size Error');
+        help_dialog_settings(e)
+    end
+    ret = 1;
     
 % --- Executes during object creation, after setting all properties.
 function edit6_CreateFcn(hObject, eventdata, handles)
@@ -652,7 +712,9 @@ function edit7_Callback(hObject, eventdata, handles)
 
 % Hints: get(hObject,'String') returns contents of edit7 as text
 %        str2double(get(hObject,'String')) returns contents of edit7 as a double
-
+    if step_size_error_check(hObject)
+        hObject.UserData = str2double(get(hObject,'String'));
+    end
 
 % --- Executes during object creation, after setting all properties.
 function edit7_CreateFcn(hObject, eventdata, handles)
@@ -675,7 +737,9 @@ function edit8_Callback(hObject, eventdata, handles)
 
 % Hints: get(hObject,'String') returns contents of edit8 as text
 %        str2double(get(hObject,'String')) returns contents of edit8 as a double
-
+    if step_size_error_check(hObject)
+        hObject.UserData = str2double(get(hObject,'String'));
+    end
 
 % --- Executes during object creation, after setting all properties.
 function edit8_CreateFcn(hObject, eventdata, handles)

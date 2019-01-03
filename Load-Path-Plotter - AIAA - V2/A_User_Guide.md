@@ -13,25 +13,45 @@ The MatLab application can be downloaded from the GitHub website https://GitHub/
 
 The site contains the source of the program, and a number of example sets of data.
 
-Contents
+- [User Guide](#user-guide)
+  - [Matlab Load Path Plotting Algorithm Version 1](#matlab-load-path-plotting-algorithm-version-1)
+    - [January 2019](#january-2019)
+    - [Plotting Load Paths for mesh and stress files using the Hex8 3D finite](#plotting-load-paths-for-mesh-and-stress-files-using-the-hex8-3d-finite)
+      - [D. Kelly, G. Pearce and K. Schroder-Turner](#d-kelly-g-pearce-and-k-schroder-turner)
+- [Installation](#installation)
+- [Example Run](#example-run)
+- [Program Features](#program-features)
+- [Format of Input Files](#format-of-input-files)
+- [References](#references)
+- [Example 1 Pin Loaded Hole](#example-1-pin-loaded-hole)
+- [Example 5 Simple Cube](#example-5-simple-cube)
+- [Example 9 Step – Static Solution](#example-9-step-%E2%80%93-static-solution)
+- [Example 9 Step Transient Solution](#example-9-step-transient-solution)
+  - [Installation](#installation-1)
 
-Installation        2
+# Installation
 
-Example Run        4
+Download the files in the director &quot;Load-Path-Plotter – AIAA – V1&quot; to your chosen MatLab run directory.
 
-Program Features        5
+To launch the program navigateate to your chosen directory and select the &quot;LoadPathGui.m&quot; file and press &quot;Run&quot;. The graphical user interface show below will appear.
 
-Format of Input Files        6
 
-References        8
 
-Example 1  Pin Loaded Hole        9
+# Example Run
 
-Example 5 Simple Cube        11
+# Program Features
 
-Example 9 Step – static solution        13
+# Format of Input Files
 
-Example 9 Step Transient solution        15
+# References
+
+# Example 1  Pin Loaded Hole
+
+# Example 5 Simple Cube
+
+# Example 9 Step – Static Solution
+
+# Example 9 Step Transient Solution
 
 
 

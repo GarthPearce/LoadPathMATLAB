@@ -678,6 +678,16 @@ function [ret] = step_size_error_check(hObject)
         help_dialog_settings(e)
     end
     ret = 1;
+function [ret] = plot_magnitude_check(hObject)
+    ret = 0;
+    if isempty(get(hObject,'String'))
+        return
+    end
+    step = str2double(get(hObject,'String'));
+    if isnan(step)
+        errmsg = ['The magnitude must be a real number.'];
+    end
+    ret = 1;
     
 % --- Executes during object creation, after setting all properties.
 function edit6_CreateFcn(hObject, eventdata, handles)
@@ -700,7 +710,7 @@ function edit7_Callback(hObject, eventdata, handles)
 
 % Hints: get(hObject,'String') returns contents of edit7 as text
 %        str2double(get(hObject,'String')) returns contents of edit7 as a double
-    if step_size_error_check(hObject)
+    if plot_magnitude_check(hObject)
         hObject.UserData = str2double(get(hObject,'String'));
     end
 
@@ -725,7 +735,7 @@ function edit8_Callback(hObject, eventdata, handles)
 
 % Hints: get(hObject,'String') returns contents of edit8 as text
 %        str2double(get(hObject,'String')) returns contents of edit8 as a double
-    if step_size_error_check(hObject)
+    if plot_magnitude_check(hObject)
         hObject.UserData = str2double(get(hObject,'String'));
     end
 
