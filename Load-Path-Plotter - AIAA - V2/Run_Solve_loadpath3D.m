@@ -330,13 +330,13 @@ tic
     fig = figure;
     fprintf('Plotting Paths\n')
 
-    modelPlot3D([Paths(:).X],[Paths(:).Y],[Paths(:).Z],[Paths(:).I],PartArr,nodes,pulse)
+    modelPlot3D([Paths(:).X],[Paths(:).Y],[Paths(:).Z],[Paths(:).I],...
+            PartArr,nodes,pulse, plot_minimum_vector, plot_maximum_vector)
     % Create new directory to store the output plots
     ename = 'Path Plots';
     dname = char(save_dir);
     mkdir(dname,ename);
     %********************Name of 'bmp' file hard-wired ************************
-    %saveas(fig,'examples\Example1 - Isotropic Plate with Loaded Hole\Path Plots\myplot.bmp')
     saveas(fig,strjoin([save_dir path_separator 'Path Plots' path_separator model_name, '.bmp'],''))
     %******************** Waitbar and Status Update ***************************
     if getappdata(wb,'canceling')
@@ -358,17 +358,18 @@ tic
     % repurposed to let the user choose where to print the plot to a pdf or
     % not. As the density is so high to see the paths properly it can be an
     % expensive task to compute.
-    
+
     %Future update will check whether an instance of the .pdf is already
     %open and modify the name so that saving conflicts dont happen.
-            
+
     delete(wb)
     fprintf('Load paths complete.\n')
 
     %%********************************End of Computation******************************
     toc
 end
-function [] = modelPlot3D(x_paths,y_paths,z_paths,Intensity,PartArr,nodes,pulse)
+function [] = modelPlot3D(x_paths,y_paths,z_paths,Intensity,PartArr,...
+                nodes,pulse, plot_minimum_vector, plot_maximum_vector)
     %Just some custom settings for plotting the paths
     Alpha = 0.1;
     Buffer = 0.35;
@@ -396,18 +397,18 @@ function [] = modelPlot3D(x_paths,y_paths,z_paths,Intensity,PartArr,nodes,pulse)
             cd = [];
             cdd = flipud(hot(64));
             vmax = max([Intensity(k).total]);
-            if vmax > plot_maximum_vector;
+            if vmax > plot_maximum_vector
                    vmax = plot_maximum_vector;
-            end       
+            end
             ncol = 64 * vmax/plot_maximum_vector;
-            for i = 1:ncol;
-                for j = 1:3;
+            for i = 1:ncol
+                for j = 1:3
                     cd(i,j) = cdd(i,j);
                 end
             end 
             cd = colormap(cd);
-        end    
-        %finish   
+        end
+        %finish
         cd = interp1(linspace(minInt,maxInt,length(cd)),cd,Intensity(k).total);
         cd = uint8(cd'*255);
         cd(4,:) = 255;
@@ -417,4 +418,5 @@ function [] = modelPlot3D(x_paths,y_paths,z_paths,Intensity,PartArr,nodes,pulse)
     end
     %Turn off plot of colorbar
     colorbar;
+    caxis([minInt maxInt])
 end
