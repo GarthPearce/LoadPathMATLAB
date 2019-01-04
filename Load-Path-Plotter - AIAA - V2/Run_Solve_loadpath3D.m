@@ -348,11 +348,11 @@ tic
     waitbar(current_time/total_time,wb,sprintf('Printing PDF'))
 
     if newPDF
-        dt = strjoin(['_', datestr(now,'HH.MM.SS_dd/mm/yy')],'');
+        dt = datestr(now,'yy_mm_dd_HH_MM_SS');
     else
         dt = '';
     end
-    dateAppenedFN = strjoin([save_dir, path_separator 'Path Plots' path_separator ,model_name, dt, '.pdf'],'');
+    dateAppenedFN = strjoin([save_dir, path_separator, 'Path Plots', path_separator ,model_name,'_', dt, '.pdf'],'');
 
     gcf;
     print(fig,dateAppenedFN, '-dpdf','-r1000', '-fillpage');
