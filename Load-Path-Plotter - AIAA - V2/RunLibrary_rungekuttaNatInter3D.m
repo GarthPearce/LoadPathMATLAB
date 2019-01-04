@@ -64,7 +64,7 @@ function [x_path, y_path,z_path, intensity] =  RunLibrary_rungekuttaNatInter3D(.
         %Calculate new points:
 
         %Runge-Kutta
-        dp1 = stress_interp(p0);
+        dp1 = V(stress, shear1, shear2)*step_size/intensity(w);
         p1 = p0 + dp1;
 
         dp2 = stress_interp(p1);

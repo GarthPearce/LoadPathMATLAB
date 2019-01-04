@@ -59,9 +59,9 @@ handles.output = hObject;
 % Update handles structure
 set(handles.checkbox1, 'value',0)
 set(handles.edit3, 'String', 'Load Path Model 1')
-set(handles.edit1, 'String', 'C:\')
-set(handles.edit2, 'String', 'C:\')
-set(handles.edit4, 'String', 'C:\')
+set(handles.edit1, 'String', pwd)
+set(handles.edit2, 'String', pwd)
+set(handles.edit4, 'String', pwd)
 set(handles.text15, 'String', 'Step Size')
 
 guidata(hObject, handles);
@@ -87,6 +87,9 @@ function cmd_getDir_Callback(hObject, eventdata, handles)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
     folder_name = uigetdir(handles.edit1.String, 'Select Folder Containing Simulation Files');
+    if folder_name == 0
+        folder_name == pwd;
+    end
     set(handles.edit1, 'String', folder_name)
     handles.cmd_getDir.UserData = sim_folder_check(folder_name);
 
@@ -157,8 +160,13 @@ function pushbutton4_Callback(hObject, eventdata, handles)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
     [file_name, path_dir] = uigetfile({'*.txt'}, 'Select Seed Point File');
-    set(handles.edit2, 'String', [path_dir file_name])
-    handles.pushbutton4.UserData = seed_point_check([path_dir file_name]);
+    if path_dir == 0
+        full_path = pwd;
+    else
+        full_path = [path_dir file_name];
+    end
+    set(handles.edit2, 'String', full_path)
+    handles.pushbutton4.UserData = seed_point_check(full_path);
 
 
 function edit2_Callback(hObject, eventdata, handles)
@@ -445,6 +453,9 @@ function pushbutton15_Callback(hObject, eventdata, handles)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
     folder_name = uigetdir('C:\', 'Select Save Directory');
+    if folder_name == 0
+        folder_name = pwd;
+    end
     set(handles.edit4, 'String', folder_name)
 
 

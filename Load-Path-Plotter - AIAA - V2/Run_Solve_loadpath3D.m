@@ -348,19 +348,20 @@ tic
     waitbar(current_time/total_time,wb,sprintf('Printing PDF'))
 
     if newPDF
-        dt = datestr(now,'HH.MM.SS_dd/mm/yy');
-        dateAppenedFN = [save_dir, path_separator 'Path Plots' path_separator ,model_name,'_', dt, '.pdf'];
+        dt = strjoin(['_', datestr(now,'HH.MM.SS_dd/mm/yy')],'');
     else
-        dateAppenedFN = [save_dir,path_separator 'Path Plots' path_separator ,model_name, '.pdf'];
+        dt = '';
     end
+    dateAppenedFN = strjoin([save_dir, path_separator 'Path Plots' path_separator ,model_name, dt, '.pdf'],'');
+
+    gcf;
+    print(fig,dateAppenedFN, '-dpdf','-r1000', '-fillpage');
+    open(dateAppenedFN);
 
     % Contrary to variable name and the description in the GUI, this was
     % repurposed to let the user choose where to print the plot to a pdf or
     % not. As the density is so high to see the paths properly it can be an
     % expensive task to compute.
-
-    %Future update will check whether an instance of the .pdf is already
-    %open and modify the name so that saving conflicts dont happen.
 
     delete(wb)
     fprintf('Load paths complete.\n')
