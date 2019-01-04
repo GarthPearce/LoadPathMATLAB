@@ -145,7 +145,7 @@ This will yield the following plot:
 
 ![EX5_R1](markdown/img/examples/ex5/result1.png)
 
-Changing the path direction from &quot;Y&quot; to &quot;X&quot; and selecting the other seed file will yeild:
+Changing the path direction from &quot;Y&quot; to &quot;X&quot; file will yeild:
 
 ![EX5_R2](markdown/img/examples/ex5/result2.png)
 
