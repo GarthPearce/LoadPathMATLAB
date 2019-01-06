@@ -99,6 +99,8 @@ Title line for Elements, Element type (use et,1,185), block data including numbe
 Followed by list of element node connectivity. Last 9 entries on each line give element number and node connectivity. Only 8-node brick elements are supported for this release. The node numbers need to be sequential (clockwise or anticlockwise) for a back face – then numbered on the front face in the same sequence – see figure below.
 The list ends with “-1”
 
+![BRICK](markdown/img/brick.png)
+
 ## ds.dat
 The data for the &quot;ds.dat&quot; should be formatted as follows:
 
@@ -131,7 +133,7 @@ This will yield the following plot:
 
 ![EX1_R1](markdown/img/examples/ex1/result1.png)
 
-Changing the path direction from &quot;Y&quot; to &quot;X&quot; and selecting the other seed file will yeild:
+Changing the path direction from &quot;Y&quot; to &quot;X&quot; and selecting the other seed file will yield:
 
 ![EX1_R2](markdown/img/examples/ex1/result2.png)
 
@@ -145,7 +147,7 @@ This will yield the following plot:
 
 ![EX5_R1](markdown/img/examples/ex5/result1.png)
 
-Changing the path direction from &quot;Y&quot; to &quot;X&quot; file will yeild:
+Changing the path direction from &quot;Y&quot; to &quot;X&quot; file will yield (the values in dark blue are very near zeros, hence this can be assumed to be a round off error):
 
 ![EX5_R2](markdown/img/examples/ex5/result2.png)
 
@@ -159,6 +161,6 @@ This will yield the following plot:
 
 ![EX8_R1](markdown/img/examples/ex8/result1.png)
 
-Changing the path direction from &quot;X&quot; to &quot;Y&quot; will yeild:
+<!-- Changing the path direction from &quot;X&quot; to &quot;Y&quot; will yield:
 
-![EX8_R2](markdown/img/examples/ex8/result2.png)
+![EX8_R2](markdown/img/examples/ex8/result2.png) -->
