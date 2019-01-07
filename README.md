@@ -23,7 +23,7 @@ The repository can be cloned or downloaded from GitHub:
 
 Once the files have been downloaded, change to the directory where the files are contained and run the &quot;LoadPathGUI.m&quot; file. You will see the GUI pop up:
 
-![GUI_1](markdown/img/gui1.png)
+![GUI_1](markdown/img/matlab.png)
 
 # Example Run
 
@@ -90,7 +90,11 @@ Then hit the &quot;Plot Paths&quot; button and the following results will be com
 # Format of Input Files
 
 Two files are required in addition to the data provided in the GUI.  The format for these files defaults to ANSYS format. For other FEA packages the files might need to be edited
-1. ds.dat
+
+
+
+## ds.dat
+
 First 3 lines give a title comment, block information (3D and number of nodes) and read format
 Followed by list of node coordinates.
 The list ends with “-1”
@@ -101,7 +105,6 @@ The list ends with “-1”
 
 ![BRICK](markdown/img/brick.png)
 
-## ds.dat
 The data for the &quot;ds.dat&quot; should be formatted as follows:
 
 **For Nodes**
@@ -112,12 +115,19 @@ The data for the &quot;ds.dat&quot; should be formatted as follows:
 
 ## nodalSolution.txt
 
+File containing stresses at nodes in global coordinates.
+Title line followed by one line for each node giving node number followed by 6 stress values.
+
 The &quot;nodalSolution.txt&quot; file be in the following format:
+
 ![NODES_STRESS](markdown/img/nodalSolution.png)
 
 ## nodeInfo.txt
 
+Two lines giving number of nodes for stress file read.
+
 The &quot;nodalInfo.txt&quot; file be in the following format:
+
 ![NODES_INFO](markdown/img/nodeInfo.png)
 
 # References
@@ -147,7 +157,7 @@ This will yield the following plot:
 
 ![EX5_R1](markdown/img/examples/ex5/result1.png)
 
-Changing the path direction from &quot;Y&quot; to &quot;X&quot; file will yield (the values in dark blue are very near zeros, hence this can be assumed to be a round off error):
+Changing the path direction from &quot;Y&quot; to &quot;X&quot; file will yield (the values in dark blue are very near zero, hence this can be assumed to be a round off error):
 
 ![EX5_R2](markdown/img/examples/ex5/result2.png)
 
