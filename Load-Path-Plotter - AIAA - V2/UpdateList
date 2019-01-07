@@ -1,6 +1,0 @@
-Add any changes that you can think of here and I'll do my best to implementing them.
-
-1. Finish commenting and cleaning.
-2. Vectorise the modules to accept 2D and 3D so there are no more psuedo-duplicate files.
-3. Set up framework to iterate over many time histories
-4. Change the plotting from a line to a dot that varies colour with intensity.

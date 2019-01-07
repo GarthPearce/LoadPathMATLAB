@@ -11,5 +11,4 @@ _trash_output/Path Plots/Load Path Model 1 - Y Path.bmp
 _trash_output/Path Plots/Load Path Model 1 - Z Path.bmp
 _trash_output/Path Plots/Load Path Model 2 - X Path.bmp
 _trash_output
-Load-Path-Plotter - AIAA - V2/Run_Solve_loadpath3D.m~
-Load-Path-Plotter - AIAA - V2/Define_Waitbar.m
+Define_Waitbar.m
