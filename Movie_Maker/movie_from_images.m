@@ -1,6 +1,7 @@
 %Find all the jpg files in the images folder
-workingDir = 'C:\Users\user\Documents\MATLAB\Movie_Maker'
-imageNames = dir(fullfile(workingDir,'Images','*.BMP'))
+workingDir = pwd
+image_directory = 'Step_Images'
+imageNames = dir(fullfile(workingDir,image_directory,'*.BMP'))
 imageNames = {imageNames.name}'
 %Construct a VideoWriter object, which creates a Motion-JPEG AVI file by default.
 outputVideo = VideoWriter(fullfile(workingDir,'out.avi'));
@@ -9,7 +10,7 @@ outputVideo.FrameRate = 1;
 open(outputVideo)
 %Loop through the image sequence, load each image, and then write it to the video.
 for ii = 1:length(imageNames)
-   img = imread(fullfile(workingDir,'Images',imageNames{ii}));
+   img = imread(fullfile(workingDir,image_directory,imageNames{ii}));
    writeVideo(outputVideo,img)
 end
 %Finalize the video file.
