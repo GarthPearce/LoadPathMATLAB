@@ -1,0 +1,1052 @@
+
+<!DOCTYPE html
+  PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html><head>
+      <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+   <!--
+This HTML was auto-generated from MATLAB code.
+To make changes, update the MATLAB code and republish this document.
+      --><title>Run_Solve_loadpath3D</title><meta name="generator" content="MATLAB 9.5"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2018-12-29"><meta name="DC.source" content="Run_Solve_loadpath3D.m"><style type="text/css">
+html,body,div,span,applet,object,iframe,h1,h2,h3,h4,h5,h6,p,blockquote,pre,a,abbr,acronym,address,big,cite,code,del,dfn,em,font,img,ins,kbd,q,s,samp,small,strike,strong,sub,sup,tt,var,b,u,i,center,dl,dt,dd,ol,ul,li,fieldset,form,label,legend,table,caption,tbody,tfoot,thead,tr,th,td{margin:0;padding:0;border:0;outline:0;font-size:100%;vertical-align:baseline;background:transparent}body{line-height:1}ol,ul{list-style:none}blockquote,q{quotes:none}blockquote:before,blockquote:after,q:before,q:after{content:'';content:none}:focus{outine:0}ins{text-decoration:none}del{text-decoration:line-through}table{border-collapse:collapse;border-spacing:0}
+
+html { min-height:100%; margin-bottom:1px; }
+html body { height:100%; margin:0px; font-family:Arial, Helvetica, sans-serif; font-size:10px; color:#000; line-height:140%; background:#fff none; overflow-y:scroll; }
+html body td { vertical-align:top; text-align:left; }
+
+h1 { padding:0px; margin:0px 0px 25px; font-family:Arial, Helvetica, sans-serif; font-size:1.5em; color:#d55000; line-height:100%; font-weight:normal; }
+h2 { padding:0px; margin:0px 0px 8px; font-family:Arial, Helvetica, sans-serif; font-size:1.2em; color:#000; font-weight:bold; line-height:140%; border-bottom:1px solid #d6d4d4; display:block; }
+h3 { padding:0px; margin:0px 0px 5px; font-family:Arial, Helvetica, sans-serif; font-size:1.1em; color:#000; font-weight:bold; line-height:140%; }
+
+a { color:#005fce; text-decoration:none; }
+a:hover { color:#005fce; text-decoration:underline; }
+a:visited { color:#004aa0; text-decoration:none; }
+
+p { padding:0px; margin:0px 0px 20px; }
+img { padding:0px; margin:0px 0px 20px; border:none; }
+p img, pre img, tt img, li img, h1 img, h2 img { margin-bottom:0px; } 
+
+ul { padding:0px; margin:0px 0px 20px 23px; list-style:square; }
+ul li { padding:0px; margin:0px 0px 7px 0px; }
+ul li ul { padding:5px 0px 0px; margin:0px 0px 7px 23px; }
+ul li ol li { list-style:decimal; }
+ol { padding:0px; margin:0px 0px 20px 0px; list-style:decimal; }
+ol li { padding:0px; margin:0px 0px 7px 23px; list-style-type:decimal; }
+ol li ol { padding:5px 0px 0px; margin:0px 0px 7px 0px; }
+ol li ol li { list-style-type:lower-alpha; }
+ol li ul { padding-top:7px; }
+ol li ul li { list-style:square; }
+
+.content { font-size:1.2em; line-height:140%; padding: 20px; }
+
+pre, code { font-size:12px; }
+tt { font-size: 1.2em; }
+pre { margin:0px 0px 20px; }
+pre.codeinput { padding:10px; border:1px solid #d3d3d3; background:#f7f7f7; }
+pre.codeoutput { padding:10px 11px; margin:0px 0px 20px; color:#4c4c4c; }
+pre.error { color:red; }
+
+@media print { pre.codeinput, pre.codeoutput { word-wrap:break-word; width:100%; } }
+
+span.keyword { color:#0000FF }
+span.comment { color:#228B22 }
+span.string { color:#A020F0 }
+span.untermstring { color:#B20000 }
+span.syscmd { color:#B28C00 }
+
+.footer { width:auto; padding:10px 0px; margin:25px 0px 0px; border-top:1px dotted #878787; font-size:0.8em; line-height:140%; font-style:italic; color:#878787; text-align:left; float:none; }
+.footer p { margin:0px; }
+.footer a { color:#878787; }
+.footer a:hover { color:#878787; text-decoration:underline; }
+.footer a:visited { color:#878787; }
+
+table th { padding:7px 5px; text-align:left; vertical-align:middle; border: 1px solid #d6d4d4; font-weight:bold; }
+table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px solid #d6d4d4; }
+
+
+
+
+
+  </style></head><body><div class="content"><h2>Contents</h2><div><ul><li><a href="#2">******************  House Keeping   ****************************</a></li><li><a href="#3">HouseKeeping - waitbar setup</a></li><li><a href="#4">Naming output files and killing interfering processes</a></li><li><a href="#5">****************  Populate Nodes and Elements  *******************</a></li><li><a href="#7">****************  Define quadrilateral faces of elements ************************</a></li><li><a href="#8">****************  and check face normal is positive pointing out  ************</a></li><li><a href="#9">****************  Only works for Hex8 Bricks</a></li><li><a href="#10">****************  If numSeeds == 0 Define Seeds based on maximum pointing vector ************************</a></li><li><a href="#11">****************  Defines seeds at peak of pulse for transient solution          ************************</a></li><li><a href="#13">**************  Load Path Generation  ****************************</a></li><li><a href="#14">**************  Plotting and Printing  ****************************</a></li></ul></div><pre class="codeinput"><span class="keyword">function</span> Run_Solve_loadpath3D(sim_dir, seed_dir, save_dir, model_name,path_dir,<span class="keyword">...</span>
+                    pulse, parallel, newPDF, recompute, step_size, path_length,<span class="keyword">...</span>
+                    plot_minimum_vector, plot_maximum_vector)
+</pre><h2 id="2">******************  House Keeping   ****************************</h2><p>Closes previously opened waitbars</p><pre class="codeinput">    F = findall(0,<span class="string">'type'</span>,<span class="string">'figure'</span>,<span class="string">'tag'</span>,<span class="string">'TMWWaitbar'</span>);
+    delete(F);
+
+    <span class="comment">% Read's seed data in</span>
+    Seed = importdata(seed_dir, <span class="string">','</span>);
+    [numSeeds, ~] = size(Seed);
+    <span class="keyword">if</span> numSeeds &gt; 0
+        xseed = Seed(:,1);
+        yseed = Seed(:,2);
+        zseed = Seed(:,3);
+    <span class="keyword">end</span>
+</pre><pre class="codeoutput error">Not enough input arguments.
+
+Error in Run_Solve_loadpath3D (line 10)
+    Seed = importdata(seed_dir, ',');
+</pre><h2 id="3">HouseKeeping - waitbar setup</h2><pre class="codeinput">    wb = waitbar(0,<span class="string">'1'</span>,<span class="string">'Name'</span>,<span class="string">'Computing Load Paths'</span>,<span class="keyword">...</span>
+            <span class="string">'CreateCancelBtn'</span>,<span class="keyword">...</span>
+            <span class="string">'setappdata(gcbf,''canceling'',1)'</span>);
+    setappdata(wb,<span class="string">'canceling'</span>,0)
+    data_read_time = 7;
+    plot_time = 3;
+    print_time = 10;
+    path_time = 80;
+    total_time = data_read_time + plot_time + print_time + path_time;
+    current_time = 0;
+    warning(<span class="string">'off'</span>,<span class="string">'MATLAB:scatteredInterpolant:DupPtsAvValuesWarnId'</span>);
+    warning(<span class="string">'off'</span>,<span class="string">'MATLAB:MKDIR:DirectoryExists'</span>)
+</pre><h2 id="4">Naming output files and killing interfering processes</h2><pre class="codeinput">    model_name = [model_name, <span class="string">' - '</span>,upper(path_dir), <span class="string">' Path'</span>];
+    model_data_name = regexprep(model_name, <span class="string">' '</span>, <span class="string">'_'</span>);
+
+    <span class="comment">%Want to make this platform independent. This line is only supported in</span>
+    <span class="comment">%windows distributions. Working on generalising, as yest dont have</span>
+    <span class="comment">%corresponding mac command.</span>
+<span class="comment">%     system(['taskkill /fi "WINDOWTITLE eq ', model_name,'.pdf"']);</span>
+    <span class="keyword">if</span> ismac
+        slash = <span class="string">'/'</span>;
+    <span class="keyword">elseif</span> ispc
+        slash = <span class="string">'\'</span>;
+        system([<span class="string">'taskkill /fi "WINDOWTITLE eq '</span>, model_name,<span class="string">'.pdf"'</span>]);
+    <span class="keyword">end</span>
+
+    nodei = [sim_dir slash <span class="string">'nodeInfo.txt'</span>];
+    numNodes = importdata(nodei);
+    numNodes = numNodes(2);
+</pre><h2 id="5">****************  Populate Nodes and Elements  *******************</h2><pre class="codeinput">    <span class="comment">% Detects whether previous data has been computed, if yes, skips</span>
+    <span class="comment">% recomputation unless forced by user in GUI</span>
+
+    <span class="keyword">if</span> ~exist([save_dir slash <span class="string">'Path Data'</span> slash <span class="string">'data_'</span> model_data_name,<span class="string">'.mat'</span>], <span class="string">'file'</span>) || recompute
+</pre><pre class="codeinput">        fprintf(<span class="string">'New model or user nominated to recompute data. Starting now.\n'</span>)
+        waitbar(current_time/total_time,wb,sprintf(<span class="string">'Computing Initial Data'</span>))
+
+        <span class="comment">%Nodal Information module</span>
+        [StressData, numNodes] = Input_nodeDat(sim_dir, numNodes);
+        current_time = current_time + data_read_time/3;
+        waitbar(current_time/total_time,wb,sprintf(<span class="string">'Computing Initial Data'</span>))
+        fprintf(<span class="string">'Nodal information complete. Starting stress population.\n'</span>)
+
+        <span class="comment">%Node data module</span>
+        [nodes] = Input_NodeDatRead(sim_dir, StressData, numNodes);
+        current_time = current_time + data_read_time/3;
+        waitbar(current_time/total_time,wb,sprintf(<span class="string">'Computing Initial Data'</span>))
+        fprintf(<span class="string">'Nodal stresses populated. Element generation beginning.\n'</span>)
+
+        <span class="comment">%Element data and main data structure generation -  %DK read element connectivity is read</span>
+        [nodePerEl, PartArr] = Input_datread(sim_dir,nodes);
+        current_time = current_time + data_read_time/3;
+
+        fprintf(<span class="string">'Elements constructed, directories being created and data being saved.\n'</span>)
+        mkdir([save_dir, slash <span class="string">'Path Data'</span>])
+        save([save_dir,slash <span class="string">'Path Data'</span> slash <span class="string">'data_'</span>,model_data_name,<span class="string">'.mat'</span>],<span class="string">'PartArr'</span>,<span class="string">'nodes'</span>, <span class="string">'nodePerEl'</span>);
+</pre><h2 id="7">****************  Define quadrilateral faces of elements ************************</h2><h2 id="8">****************  and check face normal is positive pointing out  ************</h2><h2 id="9">****************  Only works for Hex8 Bricks</h2><pre class="codeinput">        numParts = 1;
+        [irow,numel] = size(PartArr(numParts).elements);
+        RN(1:3,1:6,1:numel) = 0.0;
+        XC(1:6,1:numel) = 0.0;
+        YC(1:6,1:numel) = 0.0;
+        ZC(1:6,1:numel) = 0.0;
+        nfaces = 6;
+        <span class="comment">%numel = PartArr(1).span;</span>
+            I = 1;
+            J = 2;
+            K = 3;
+            L = 4;
+            M = 5;
+            N = 6;
+            O = 7;
+            P = 8;
+        dkfaces = [[J;I;L;K],[I;J;N;M],[J;K;O;N],[K;L;P;O],[L;I;M;P],[M;N;O;P]];
+        <span class="keyword">for</span> kk = 1:numel
+            elnods = PartArr(1).elements(kk).nodenums;
+            <span class="keyword">for</span> k = 1:nfaces
+                <span class="keyword">for</span> kkk = 1:4
+                    kkkk = dkfaces(kkk,k);
+                    kkkkk = elnods(kkkk);
+                    Xdk(kkk,k) = nodes(kkkkk).xCoordinate;
+                    Ydk(kkk,k) = nodes(kkkkk).yCoordinate;
+                    Zdk(kkk,k) = nodes(kkkkk).zCoordinate;
+                <span class="keyword">end</span>
+                <span class="comment">%Centroid of face</span>
+                XC(k,kk) = 0.0;
+                YC(k,kk) = 0.0;
+                ZC(k,kk) = 0.0;
+                <span class="keyword">for</span> kkk = 1:4
+                    XC(k,kk) = XC(k,kk) + Xdk(kkk,k)/4.0;
+                    YC(k,kk) = YC(k,kk) + Ydk(kkk,k)/4.0;
+                    ZC(k,kk) = ZC(k,kk) + Zdk(kkk,k)/4.0;
+                <span class="keyword">end</span>
+            <span class="keyword">end</span>
+            <span class="comment">%CG of  element kk</span>
+            <span class="keyword">for</span> kkk=1:3
+                CGXYZ(kkk,kk) = 0.0;
+            <span class="keyword">end</span>
+            <span class="keyword">for</span> k = 1 : nfaces;
+                CGXYZ(1,kk) = CGXYZ(1,kk) + XC(k,kk)/6.0;
+                CGXYZ(2,kk) = CGXYZ(2,kk) + YC(k,kk)/6.0;
+                CGXYZ(3,kk) = CGXYZ(3,kk) + ZC(k,kk)/6.0;
+            <span class="keyword">end</span>
+            <span class="keyword">for</span> k = 1:nfaces;
+                <span class="comment">%Normal to face</span>
+                V1 = Xdk(3,k) - Xdk(1,k);
+                V2 = Ydk(3,k) - Ydk(1,k);
+                V3 = Zdk(3,k) - Zdk(1,k);
+                RL = V1*V1 + V2*V2 + V3*V3;
+                RL = sqrt(RL);
+                V1 = V1/RL;
+                V2 = V2/RL;
+                V3 = V3/RL;
+                W1 = Xdk(4,k) - Xdk(2,k);
+                W2 = Ydk(4,k) - Ydk(2,k);
+                W3 = Zdk(4,k) - Zdk(2,k);
+                RL = W1*W1 + W2*W2 + W3*W3;
+                RL = sqrt(RL);
+                W1 = W1/RL;
+                W2 = W2/RL;
+                W3 = W3/RL;
+                <span class="comment">%Normal = V1 X V2</span>
+                RN(1,k,kk) = V2*W3-V3*W2;
+                RN(2,k,kk) = V3*W1-V1*W3;
+                RN(3,k,kk) = V1*W2-V2*W1;
+                V1 = XC(k,kk) - CGXYZ(1,kk);
+                V2 = YC(k,kk) - CGXYZ(2,kk);
+                V3 = ZC(k,kk) - CGXYZ(3,kk);
+                dot = RN(1,k,kk)*V1 + RN(2,k,kk)*V2 + RN(3,k,kk)*V3;
+                <span class="keyword">if</span> dot &lt; 0;
+                    <span class="keyword">for</span> kkk = 1:3;
+                        RN(kkk,k,kk) = -RN(kkk,k,kk);
+                    <span class="keyword">end</span>
+                <span class="keyword">end</span>
+            <span class="keyword">end</span>
+        <span class="keyword">end</span>
+        clear <span class="string">N</span>
+        N(1,:,:) = XC;
+        N(2,:,:) = YC;
+        N(3,:,:) = ZC;
+</pre><h2 id="10">****************  If numSeeds == 0 Define Seeds based on maximum pointing vector ************************</h2><h2 id="11">****************  Defines seeds at peak of pulse for transient solution          ************************</h2><pre class="codeinput">        <span class="keyword">if</span> numSeeds == 0;
+            <span class="comment">%Set up list of element pointing vectors</span>
+            <span class="comment">%Determine x-coordinate for maximum magnitude of pointing vector</span>
+            <span class="comment">%to define peak of pulse. Set seeds on all elements with XCG</span>
+            <span class="comment">%equal to that value</span>
+            VectorMag(1:numel) = 0.0;
+            <span class="keyword">for</span> k = 1:numel
+                elnods = PartArr(1).elements(k).nodenums;
+                PointVec(1:3) = 0.0;
+                <span class="keyword">for</span> kk = 1,8;
+                    kkk = elnods(kk);
+                    <span class="keyword">if</span> path_dir == <span class="string">'X'</span>
+                        PointVec(1) = PointVec(1) + nodes(kkk).xStress/8.0;
+                        PointVec(2) = PointVec(2) + nodes(kkk).xyStress/8.0;
+                        PointVec(3) = PointVec(3) + nodes(kkk).xzStress/8.0;
+                    <span class="keyword">end</span>
+                    <span class="keyword">if</span> path_dir == <span class="string">'Y'</span>
+                        PointVec(1) = PointVec(1) + nodes(kkk).xyStress/8.0;
+                        PointVec(2) = PointVec(2) + nodes(kkk).yStress/8.0;
+                        PointVec(3) = PointVec(3) + nodes(kkk).yzStress/8.0;
+                    <span class="keyword">end</span>
+                    <span class="keyword">if</span> path_dir == <span class="string">'Z'</span>
+                        PointVec(1) = PointVec(1) + nodes(kkk).xzStress/8.0;
+                        PointVec(2) = PointVec(2) + nodes(kkk).yzStress/8.0;
+                        PointVec(3) = PointVec(3) + nodes(kkk).zStress/8.0;
+                    <span class="keyword">end</span>
+                <span class="keyword">end</span>
+                VectorMag(k) = sqrt(PointVec(1)*PointVec(1)+PointVec(2)*PointVec(2)+PointVec(3)*PointVec(3));
+            <span class="keyword">end</span>
+            [VectorSort, IX] = sort(VectorMag);
+                k=1;
+                kk = IX(numel-k+1);
+                xs = CGXYZ(1,kk);
+                ys = CGXYZ(2,kk);
+                zs = CGXYZ(3,kk);
+                nSeeds = 0;
+            <span class="keyword">for</span> k = 1:numel;
+                <span class="keyword">if</span> abs(CGXYZ(1,k) - xs) &lt; 0.1;
+                nSeeds = nSeeds + 1;
+                xseed(nSeeds) = CGXYZ(1,k);
+                yseed(nSeeds) = CGXYZ(2,k);
+                zseed(nSeeds) = CGXYZ(3,k);
+                <span class="keyword">end</span>
+            <span class="keyword">end</span>
+            numSeeds = nSeeds;
+        <span class="keyword">end</span>
+</pre><pre class="codeinput">    <span class="keyword">else</span>
+        <span class="comment">%This loads data if the preprocessign has already been done.</span>
+        fprintf(<span class="string">'Previous model detected, loading data.\n'</span>)
+        waitbar(current_time/total_time,wb,sprintf(<span class="string">'Loading Data'</span>))
+        load([save_dir slash <span class="string">'Path Data'</span> slash <span class="string">'data_'</span> model_data_name,<span class="string">'.mat'</span>]);
+        current_time = current_time + data_read_time;
+
+        fprintf(<span class="string">'Data loaded. Starting path computation.\n'</span>)
+
+    <span class="keyword">end</span>
+        <span class="comment">%******************** Waitbar and Status Update ***************************</span>
+
+    <span class="keyword">if</span> getappdata(wb,<span class="string">'canceling'</span>)
+        delete(wb)
+        <span class="keyword">return</span>
+    <span class="keyword">end</span>
+
+    waitbar(current_time/total_time,wb,sprintf(<span class="string">'Starting Paths'</span>))
+</pre><h2 id="13">**************  Load Path Generation  ****************************</h2><pre class="codeinput">    <span class="comment">%Initialise data containers for load paths</span>
+
+    Paths(numSeeds).X.forward = [];
+    Paths(numSeeds).Y.forward = [];
+    Paths(numSeeds).Z.forward = [];
+    Paths(numSeeds).I.forward = [];
+    Paths(numSeeds).X.total = [];
+    Paths(numSeeds).Y.total = [];
+    Paths(numSeeds).Z.total = [];
+    Paths(numSeeds).I.total = [];
+
+    <span class="keyword">switch</span> parallel
+        <span class="comment">%Parallel computation if load paths</span>
+        <span class="keyword">case</span> 1
+            workers = 4;
+                <span class="comment">% Currently 2D and 3D are separate, very crude. Future</span>
+                <span class="comment">% update is to pass as vector and scale all functions</span>
+                <span class="comment">% according to the length of that vector.</span>
+                <span class="keyword">parfor</span> (i = 1:numSeeds, workers)
+                    fprintf(<span class="string">'Starting path %i\n'</span>,i)
+                    warning(<span class="string">'off'</span>,<span class="string">'MATLAB:scatteredInterpolant:DupPtsAvValuesWarnId'</span>);
+                    <span class="comment">%Main work horse module - Runge Kutta</span>
+
+                    [x, y, z, intense] = RunLibrary_rungekuttaNatInter3D(xseed(i),<span class="keyword">...</span>
+                        yseed(i),zseed(i), PartArr, path_dir, nodePerEl,path_length,false,step_size,wb,nodes,RN,XC,YC,ZC);
+                    <span class="keyword">if</span> isempty(x)
+                        fprintf(<span class="string">'Path %i unsuccessful\n'</span>,i)
+                        <span class="keyword">continue</span>
+                    <span class="keyword">end</span>
+
+                    Paths(i).X.forward = x;
+                    Paths(i).Y.forward = y;
+                    Paths(i).Z.forward = z;
+                    Paths(i).I.forward = intense;
+
+                     [x, y, z, intense ] = <span class="keyword">...</span>
+                        RunLibrary_rungekuttaNatInter3D(xseed(i), yseed(i),<span class="keyword">...</span>
+                        zseed(i), PartArr, path_dir, nodePerEl,path_length, true,step_size, wb,RN,N);
+                    Paths(i).X.total = [fliplr(x), Paths(i).X.forward];
+                    Paths(i).Y.total = [fliplr(y), Paths(i).Y.forward];
+                    Paths(i).Z.total = [fliplr(z), Paths(i).Z.forward];
+                    Paths(i).I.total = [fliplr(intense), Paths(i).I.forward];
+                    [mdk,ndk] = size(intense);
+                    fprintf(<span class="string">'Path %i done\n'</span>,i);
+                <span class="keyword">end</span>
+                current_time = current_time +80;
+    	  <span class="comment">% ******************   Single thread processing</span>
+        <span class="keyword">case</span> 0
+            <span class="keyword">for</span> i = 1:numSeeds
+                <span class="comment">%fprintf('Starting path %i\n',i)</span>
+                <span class="keyword">if</span> getappdata(wb,<span class="string">'canceling'</span>)
+                    delete(wb)
+                    <span class="keyword">return</span>
+                <span class="keyword">end</span>
+
+                waitbar(current_time/total_time,wb,sprintf(<span class="string">'Seed %i of %i Computing'</span>, i, numSeeds))
+                warning(<span class="string">'off'</span>,<span class="string">'MATLAB:scatteredInterpolant:DupPtsAvValuesWarnId'</span>);
+                reverse_path = false;
+                [dkx, dky, dkz, dkintense] = RunLibrary_rungekuttaNatInter3D(<span class="keyword">...</span>
+                    xseed(i),yseed(i),zseed(i), PartArr, path_dir,<span class="keyword">...</span>
+                    path_length,reverse_path,step_size, wb,RN,N);
+                <span class="keyword">if</span> isempty(dkx)
+                    fprintf(<span class="string">'Path %i unsuccessful\n'</span>,i)
+                    <span class="keyword">continue</span>
+                <span class="keyword">end</span>
+
+                <span class="comment">%Next block only plot peak of pulse</span>
+                <span class="keyword">if</span> pulse == 1
+                    clear <span class="string">x</span>;
+                    clear <span class="string">y</span>;
+                    clear <span class="string">z</span>;
+                    clear <span class="string">intense</span>;
+                    x = [];
+                    y = [];
+                    z = [];
+                    intense = [];
+                    kdk = 1;
+                    kkdk = 0;
+                    [mdk,ndk] = size(dkintense);
+                    <span class="keyword">while</span> kdk &lt; ndk;
+                        <span class="comment">%Hard wired to plot path only if magnitude of pointing vector &gt; 20</span>
+                        <span class="comment">%pointing vector &gt; 20.0</span>
+                        <span class="keyword">if</span> dkintense(kdk) &gt; 20.0;
+                            kkdk = kkdk+1;
+                            x(kkdk) = dkx(kdk);
+                            y(kkdk) = dky(kdk);
+                            z(kkdk) = dkz(kdk);
+                            intense(kkdk) = dkintense(kdk);
+                        <span class="keyword">end</span>
+                        kdk = kdk + 1;
+                    <span class="keyword">end</span>
+                <span class="keyword">end</span>
+                <span class="keyword">if</span> pulse == 0
+                    x = dkx;
+                    y = dky;
+                    z = dkz;
+                    intense = dkintense;
+                <span class="keyword">end</span>
+
+                Paths(i).X.forward = x;
+                Paths(i).Y.forward = y;
+                Paths(i).Z.forward = z;
+                Paths(i).I.forward = intense;
+                current_time = current_time + 1/numSeeds *80/2;
+                reverse_path = true;
+                [dkx, dky, dkz, dkintense ] = RunLibrary_rungekuttaNatInter3D(<span class="keyword">...</span>
+                    xseed(i), yseed(i), zseed(i), PartArr, path_dir,<span class="keyword">...</span>
+                    path_length,reverse_path,step_size, wb,RN,N);
+
+                <span class="comment">%Next block added by dk to only plot peak of pulse</span>
+
+                <span class="keyword">if</span> pulse == 1
+                    clear <span class="string">x</span>;
+                    clear <span class="string">y</span>;
+                    clear <span class="string">z</span>;
+                    clear <span class="string">intense</span>;
+                    x = [];
+                    y = [];
+                    z = [];
+                    intense = [];
+                    kdk = 1;
+                    kkdk = 0;
+                    [mdk,ndk] = size(dkintense);
+                    <span class="keyword">while</span> kdk &lt; ndk;
+                        <span class="comment">%Only plot path if magnitude of pointing</span>
+                        <span class="comment">%vector  &gt; 20 and x coordinate is &lt; 200.</span>
+                        <span class="comment">%This is to stop path extending past 200 in some</span>
+                        <span class="comment">%cases and changing length of plot for movie.</span>
+                        <span class="keyword">if</span> dkintense(kdk) &gt; plot_minimum_vector;
+                            kkdk = kkdk+1;
+                            x(kkdk) = dkx(kdk);
+                            y(kkdk) = dky(kdk);
+                            z(kkdk) = dkz(kdk);
+                            intense(kkdk) = dkintense(kdk);
+                        <span class="keyword">end</span>
+                        kdk = kdk + 1;
+                    <span class="keyword">end</span>
+                <span class="keyword">end</span>
+                <span class="keyword">if</span> pulse == 0
+                    x = dkx;
+                    y = dky;
+                    z = dkz;
+                    intense = dkintense;
+                    [mdk,ndk] = size(intense);
+                <span class="keyword">end</span>
+                Paths(i).X.total = [fliplr(x), Paths(i).X.forward];
+                Paths(i).Y.total = [fliplr(y), Paths(i).Y.forward];
+                Paths(i).Z.total = [fliplr(z), Paths(i).Z.forward];
+                Paths(i).I.total = [fliplr(intense), Paths(i).I.forward];
+                current_time = current_time + 1/numSeeds *80/2;
+                fprintf(<span class="string">'Path %i done\n'</span>,i)
+            <span class="keyword">end</span>
+    <span class="keyword">end</span>
+    fprintf(<span class="string">'All seeds tested and appropriate paths computed. Saving path data.\n'</span>)
+
+    <span class="comment">%******************** Waitbar and Status Update ***************************</span>
+
+    <span class="keyword">if</span> getappdata(wb,<span class="string">'canceling'</span>)
+        delete(wb)
+        <span class="keyword">return</span>
+    <span class="keyword">end</span>
+    waitbar(current_time/total_time,wb,sprintf(<span class="string">'Paths Finished Paths, Saving and Plotting now...\n'</span>))
+</pre><h2 id="14">**************  Plotting and Printing  ****************************</h2><pre class="codeinput">    <span class="comment">%Data is output to .mat files so that in a future update the user can</span>
+    <span class="comment">%modulate the load path program. For example they could load previous</span>
+    <span class="comment">%paths and just run the plotting and printing section of the code. Or</span>
+    <span class="comment">%the user could just compute the paths and then send them to someone</span>
+    <span class="comment">%else to plot them on their machine or with their specific settings.</span>
+
+    <span class="comment">%Other considerations are for future transient analysis where multiple</span>
+    <span class="comment">%data sets may have to be condensed. And that its a good backup of the</span>
+    <span class="comment">%path calculation.</span>
+
+    save([save_dir slash <span class="string">'Path Data'</span> slash <span class="string">'pathdata_'</span> model_data_name <span class="string">'.mat'</span>], <span class="string">'Paths'</span>);
+    fig = figure;
+    fprintf(<span class="string">'Plotting Paths\n'</span>)
+
+    modelPlot3D([Paths(:).X],[Paths(:).Y],[Paths(:).Z],[Paths(:).I],PartArr,nodes,pulse)
+    <span class="comment">% Create new directory to store the output plots</span>
+    mkdir(save_dir,[slash <span class="string">'Path Plots'</span>])
+    <span class="comment">%********************Name of 'bmp' file hard-wired ************************</span>
+    <span class="comment">%saveas(fig,'examples\Example1 - Isotropic Plate with Loaded Hole\Path Plots\myplot.bmp')</span>
+    saveas(fig,[save_dir slash <span class="string">'Path Plots'</span> slash model_name, <span class="string">'.bmp'</span>])
+    <span class="comment">%******************** Waitbar and Status Update ***************************</span>
+    <span class="keyword">if</span> getappdata(wb,<span class="string">'canceling'</span>)
+        delete(wb)
+        <span class="keyword">return</span>
+    <span class="keyword">end</span>
+    fprintf(<span class="string">'Printing to PDF\n'</span>)
+    current_time = current_time + plot_time;
+    waitbar(current_time/total_time,wb,sprintf(<span class="string">'Printing PDF'</span>))
+
+    <span class="keyword">if</span> newPDF
+        dt = datestr(now,<span class="string">'HH.MM.SS_dd/mm/yy'</span>);
+        dateAppenedFN = [save_dir, slash <span class="string">'Path Plots'</span> slash ,model_name,<span class="string">'_'</span>, dt, <span class="string">'.pdf'</span>];
+    <span class="keyword">else</span>
+        dateAppenedFN = [save_dir,slash <span class="string">'Path Plots'</span> slash ,model_name, <span class="string">'.pdf'</span>];
+    <span class="keyword">end</span>
+
+    <span class="comment">% Contrary to variable name and the description in the GUI, this was</span>
+    <span class="comment">% repurposed to let the user choose where to print the plot to a pdf or</span>
+    <span class="comment">% not. As the density is so high to see the paths properly it can be an</span>
+    <span class="comment">% expensive task to compute.</span>
+
+    <span class="comment">%Future update will check whether an instance of the .pdf is already</span>
+    <span class="comment">%open and modify the name so that saving conflicts dont happen.</span>
+
+    delete(wb)
+    fprintf(<span class="string">'Load paths complete.\n'</span>)
+
+    <span class="comment">%%********************************End of Computation******************************</span>
+</pre><pre class="codeinput"><span class="keyword">end</span>
+<span class="keyword">function</span> [] = modelPlot3D(x_paths,y_paths,z_paths,Intensity,PartArr,nodes,pulse)
+    <span class="comment">%Just some custom settings for plotting the paths</span>
+    Alpha = 0.1;
+    Buffer = 0.35;
+    RunPlot_wireFrame(PartArr,Alpha, Buffer,nodes);
+    seedLength = size(x_paths(:),1);
+    maxInt = max(max([Intensity.total]));
+    minInt = min(min([Intensity.total]));
+    <span class="keyword">if</span> isempty(maxInt)
+        disp(<span class="string">'No Successful Paths'</span>)
+        <span class="keyword">return</span>
+    <span class="keyword">end</span>
+    <span class="keyword">for</span> k = 1:seedLength
+        <span class="keyword">if</span> isempty(x_paths(k).total)
+            fprintf(<span class="string">'Path %i unsuccessful'</span>, k)
+            <span class="keyword">continue</span>
+        <span class="keyword">end</span>
+        cd = colormap(<span class="string">'parula'</span>);
+        <span class="comment">%%*********************************If transient solution hardwire maximum ***********</span>
+        <span class="comment">%%*********************************Should be same for all plots in sequence *********</span>
+        <span class="comment">%%*********************************Not just current plot. ***************************</span>
+        <span class="comment">%%*********************************pulse = 1 if plot is transient *************</span>
+        <span class="keyword">if</span> pulse == 1
+		    cd = colormap(flipud(hot));
+            cdd = [];
+            cd = [];
+            cdd = flipud(hot(64));
+            vmax = max([Intensity(k).total]);
+            <span class="keyword">if</span> vmax &gt; plot_maximum_vector;
+                   vmax = plot_maximum_vector;
+            <span class="keyword">end</span>
+            ncol = 64 * vmax/plot_maximum_vector;
+            <span class="keyword">for</span> i = 1:ncol;
+                <span class="keyword">for</span> j = 1:3;
+                    cd(i,j) = cdd(i,j);
+                <span class="keyword">end</span>
+            <span class="keyword">end</span>
+            cd = colormap(cd);
+        <span class="keyword">end</span>
+        <span class="comment">%finish</span>
+        cd = interp1(linspace(minInt,maxInt,length(cd)),cd,Intensity(k).total);
+        cd = uint8(cd'*255);
+        cd(4,:) = 255;
+        paths = line(x_paths(k).total,y_paths(k).total,z_paths(k).total);
+        drawnow;
+        set(paths.Edge,<span class="string">'ColorBinding'</span>,<span class="string">'interpolated'</span>, <span class="string">'ColorData'</span>,cd)
+    <span class="keyword">end</span>
+    <span class="comment">%Turn off plot of colorbar</span>
+    colorbar;
+<span class="keyword">end</span>
+</pre><p class="footer"><br><a href="https://www.mathworks.com/products/matlab/">Published with MATLAB&reg; R2018b</a><br></p></div><!--
+##### SOURCE BEGIN #####
+function Run_Solve_loadpath3D(sim_dir, seed_dir, save_dir, model_name,path_dir,...
+                    pulse, parallel, newPDF, recompute, step_size, path_length,...
+                    plot_minimum_vector, plot_maximum_vector)
+%% ********************  House Keeping   ******************************
+% Closes previously opened waitbars
+    F = findall(0,'type','figure','tag','TMWWaitbar');
+    delete(F);
+
+    % Read's seed data in
+    Seed = importdata(seed_dir, ',');
+    [numSeeds, ~] = size(Seed);
+    if numSeeds > 0
+        xseed = Seed(:,1);
+        yseed = Seed(:,2);
+        zseed = Seed(:,3);
+    end
+
+%% HouseKeeping - waitbar setup
+    wb = waitbar(0,'1','Name','Computing Load Paths',...
+            'CreateCancelBtn',...
+            'setappdata(gcbf,''canceling'',1)');
+    setappdata(wb,'canceling',0)
+    data_read_time = 7;
+    plot_time = 3;
+    print_time = 10;
+    path_time = 80;
+    total_time = data_read_time + plot_time + print_time + path_time;
+    current_time = 0;
+    warning('off','MATLAB:scatteredInterpolant:DupPtsAvValuesWarnId');
+    warning('off','MATLAB:MKDIR:DirectoryExists')
+
+    %% Naming output files and killing interfering processes
+    model_name = [model_name, ' - ',upper(path_dir), ' Path'];
+    model_data_name = regexprep(model_name, ' ', '_');
+
+    %Want to make this platform independent. This line is only supported in
+    %windows distributions. Working on generalising, as yest dont have
+    %corresponding mac command.
+%     system(['taskkill /fi "WINDOWTITLE eq ', model_name,'.pdf"']);
+    if ismac
+        slash = '/';
+    elseif ispc
+        slash = '\';
+        system(['taskkill /fi "WINDOWTITLE eq ', model_name,'.pdf"']);
+    end
+
+    nodei = [sim_dir slash 'nodeInfo.txt'];
+    numNodes = importdata(nodei);
+    numNodes = numNodes(2);
+
+    %% ******************  Populate Nodes and Elements  *********************
+
+    % Detects whether previous data has been computed, if yes, skips
+    % recomputation unless forced by user in GUI
+
+    if ~exist([save_dir slash 'Path Data' slash 'data_' model_data_name,'.mat'], 'file') || recompute
+
+        fprintf('New model or user nominated to recompute data. Starting now.\n')
+        waitbar(current_time/total_time,wb,sprintf('Computing Initial Data'))
+
+        %Nodal Information module
+        [StressData, numNodes] = Input_nodeDat(sim_dir, numNodes);
+        current_time = current_time + data_read_time/3;
+        waitbar(current_time/total_time,wb,sprintf('Computing Initial Data'))
+        fprintf('Nodal information complete. Starting stress population.\n')
+
+        %Node data module
+        [nodes] = Input_NodeDatRead(sim_dir, StressData, numNodes);
+        current_time = current_time + data_read_time/3;
+        waitbar(current_time/total_time,wb,sprintf('Computing Initial Data'))
+        fprintf('Nodal stresses populated. Element generation beginning.\n')
+
+        %Element data and main data structure generation -  %DK read element connectivity is read
+        [nodePerEl, PartArr] = Input_datread(sim_dir,nodes); 
+        current_time = current_time + data_read_time/3;
+
+        fprintf('Elements constructed, directories being created and data being saved.\n')
+        mkdir([save_dir, slash 'Path Data'])
+        save([save_dir,slash 'Path Data' slash 'data_',model_data_name,'.mat'],'PartArr','nodes', 'nodePerEl');
+
+    %% ******************  Define quadrilateral faces of elements **************************
+    %% ******************  and check face normal is positive pointing out  **************
+    %% ******************  Only works for Hex8 Bricks
+        numParts = 1;
+        [irow,numel] = size(PartArr(numParts).elements);
+        RN(1:3,1:6,1:numel) = 0.0;
+        XC(1:6,1:numel) = 0.0;
+        YC(1:6,1:numel) = 0.0;
+        ZC(1:6,1:numel) = 0.0;
+        nfaces = 6;
+        %numel = PartArr(1).span;
+            I = 1;
+            J = 2;
+            K = 3;
+            L = 4;
+            M = 5;
+            N = 6;
+            O = 7;
+            P = 8;
+        dkfaces = [[J;I;L;K],[I;J;N;M],[J;K;O;N],[K;L;P;O],[L;I;M;P],[M;N;O;P]];
+        for kk = 1:numel
+            elnods = PartArr(1).elements(kk).nodenums;
+            for k = 1:nfaces
+                for kkk = 1:4
+                    kkkk = dkfaces(kkk,k);
+                    kkkkk = elnods(kkkk);
+                    Xdk(kkk,k) = nodes(kkkkk).xCoordinate;
+                    Ydk(kkk,k) = nodes(kkkkk).yCoordinate;
+                    Zdk(kkk,k) = nodes(kkkkk).zCoordinate;
+                end
+                %Centroid of face
+                XC(k,kk) = 0.0;
+                YC(k,kk) = 0.0;
+                ZC(k,kk) = 0.0;
+                for kkk = 1:4
+                    XC(k,kk) = XC(k,kk) + Xdk(kkk,k)/4.0;
+                    YC(k,kk) = YC(k,kk) + Ydk(kkk,k)/4.0;
+                    ZC(k,kk) = ZC(k,kk) + Zdk(kkk,k)/4.0;
+                end
+            end
+            %CG of  element kk
+            for kkk=1:3
+                CGXYZ(kkk,kk) = 0.0;
+            end
+            for k = 1 : nfaces;
+                CGXYZ(1,kk) = CGXYZ(1,kk) + XC(k,kk)/6.0;
+                CGXYZ(2,kk) = CGXYZ(2,kk) + YC(k,kk)/6.0;
+                CGXYZ(3,kk) = CGXYZ(3,kk) + ZC(k,kk)/6.0;
+            end
+            for k = 1:nfaces;
+                %Normal to face
+                V1 = Xdk(3,k) - Xdk(1,k);
+                V2 = Ydk(3,k) - Ydk(1,k);
+                V3 = Zdk(3,k) - Zdk(1,k);
+                RL = V1*V1 + V2*V2 + V3*V3;
+                RL = sqrt(RL);
+                V1 = V1/RL;
+                V2 = V2/RL;
+                V3 = V3/RL;
+                W1 = Xdk(4,k) - Xdk(2,k);
+                W2 = Ydk(4,k) - Ydk(2,k);
+                W3 = Zdk(4,k) - Zdk(2,k);
+                RL = W1*W1 + W2*W2 + W3*W3;
+                RL = sqrt(RL);
+                W1 = W1/RL;
+                W2 = W2/RL;
+                W3 = W3/RL;
+                %Normal = V1 X V2
+                RN(1,k,kk) = V2*W3-V3*W2;
+                RN(2,k,kk) = V3*W1-V1*W3;
+                RN(3,k,kk) = V1*W2-V2*W1;
+                V1 = XC(k,kk) - CGXYZ(1,kk);
+                V2 = YC(k,kk) - CGXYZ(2,kk);
+                V3 = ZC(k,kk) - CGXYZ(3,kk);
+                dot = RN(1,k,kk)*V1 + RN(2,k,kk)*V2 + RN(3,k,kk)*V3;
+                if dot < 0;
+                    for kkk = 1:3;
+                        RN(kkk,k,kk) = -RN(kkk,k,kk);
+                    end
+                end
+            end
+        end
+        clear N
+        N(1,:,:) = XC;
+        N(2,:,:) = YC;
+        N(3,:,:) = ZC;
+        %% ******************  If numSeeds == 0 Define Seeds based on maximum pointing vector **************************
+        %% ******************  Defines seeds at peak of pulse for transient solution          **************************
+        if numSeeds == 0;
+            %Set up list of element pointing vectors
+            %Determine x-coordinate for maximum magnitude of pointing vector 
+            %to define peak of pulse. Set seeds on all elements with XCG
+            %equal to that value
+            VectorMag(1:numel) = 0.0;
+            for k = 1:numel
+                elnods = PartArr(1).elements(k).nodenums;
+                PointVec(1:3) = 0.0;
+                for kk = 1,8;
+                    kkk = elnods(kk);
+                    if path_dir == 'X'
+                        PointVec(1) = PointVec(1) + nodes(kkk).xStress/8.0;
+                        PointVec(2) = PointVec(2) + nodes(kkk).xyStress/8.0;
+                        PointVec(3) = PointVec(3) + nodes(kkk).xzStress/8.0;
+                    end
+                    if path_dir == 'Y'
+                        PointVec(1) = PointVec(1) + nodes(kkk).xyStress/8.0;
+                        PointVec(2) = PointVec(2) + nodes(kkk).yStress/8.0;
+                        PointVec(3) = PointVec(3) + nodes(kkk).yzStress/8.0;
+                    end
+                    if path_dir == 'Z'
+                        PointVec(1) = PointVec(1) + nodes(kkk).xzStress/8.0;
+                        PointVec(2) = PointVec(2) + nodes(kkk).yzStress/8.0;
+                        PointVec(3) = PointVec(3) + nodes(kkk).zStress/8.0;
+                    end
+                end
+                VectorMag(k) = sqrt(PointVec(1)*PointVec(1)+PointVec(2)*PointVec(2)+PointVec(3)*PointVec(3));
+            end
+            [VectorSort, IX] = sort(VectorMag);
+                k=1;
+                kk = IX(numel-k+1);
+                xs = CGXYZ(1,kk);
+                ys = CGXYZ(2,kk);
+                zs = CGXYZ(3,kk);
+                nSeeds = 0;
+            for k = 1:numel;    
+                if abs(CGXYZ(1,k) - xs) < 0.1;
+                nSeeds = nSeeds + 1;
+                xseed(nSeeds) = CGXYZ(1,k);
+                yseed(nSeeds) = CGXYZ(2,k);
+                zseed(nSeeds) = CGXYZ(3,k);
+                end
+            end
+            numSeeds = nSeeds;
+        end
+    else
+        %This loads data if the preprocessign has already been done.
+        fprintf('Previous model detected, loading data.\n')
+        waitbar(current_time/total_time,wb,sprintf('Loading Data'))
+        load([save_dir slash 'Path Data' slash 'data_' model_data_name,'.mat']);
+        current_time = current_time + data_read_time;
+        
+        fprintf('Data loaded. Starting path computation.\n')
+        
+    end
+        %******************** Waitbar and Status Update ***************************
+
+    if getappdata(wb,'canceling')
+        delete(wb)
+        return
+    end
+    
+    waitbar(current_time/total_time,wb,sprintf('Starting Paths'))
+
+    %% ****************  Load Path Generation  ******************************
+    
+    %Initialise data containers for load paths
+    
+    Paths(numSeeds).X.forward = [];
+    Paths(numSeeds).Y.forward = [];
+    Paths(numSeeds).Z.forward = [];
+    Paths(numSeeds).I.forward = [];
+    Paths(numSeeds).X.total = [];
+    Paths(numSeeds).Y.total = [];
+    Paths(numSeeds).Z.total = [];
+    Paths(numSeeds).I.total = [];
+        
+    switch parallel
+        %Parallel computation if load paths
+        case 1
+            workers = 4;
+                % Currently 2D and 3D are separate, very crude. Future
+                % update is to pass as vector and scale all functions
+                % according to the length of that vector.
+                parfor (i = 1:numSeeds, workers)
+                    fprintf('Starting path %i\n',i)
+                    warning('off','MATLAB:scatteredInterpolant:DupPtsAvValuesWarnId');
+                    %Main work horse module - Runge Kutta
+
+                    [x, y, z, intense] = RunLibrary_rungekuttaNatInter3D(xseed(i),...
+                        yseed(i),zseed(i), PartArr, path_dir, nodePerEl,path_length,false,step_size,wb,nodes,RN,XC,YC,ZC);                        
+                    if isempty(x)
+                        fprintf('Path %i unsuccessful\n',i)
+                        continue
+                    end
+
+                    Paths(i).X.forward = x;
+                    Paths(i).Y.forward = y;
+                    Paths(i).Z.forward = z;
+                    Paths(i).I.forward = intense;
+
+                     [x, y, z, intense ] = ...
+                        RunLibrary_rungekuttaNatInter3D(xseed(i), yseed(i),...
+                        zseed(i), PartArr, path_dir, nodePerEl,path_length, true,step_size, wb,RN,N);                       
+                    Paths(i).X.total = [fliplr(x), Paths(i).X.forward];
+                    Paths(i).Y.total = [fliplr(y), Paths(i).Y.forward];
+                    Paths(i).Z.total = [fliplr(z), Paths(i).Z.forward];
+                    Paths(i).I.total = [fliplr(intense), Paths(i).I.forward];
+                    [mdk,ndk] = size(intense);                                               
+                    fprintf('Path %i done\n',i);                        
+                end
+                current_time = current_time +80;   
+    	  % ******************   Single thread processing
+        case 0
+            for i = 1:numSeeds
+                %fprintf('Starting path %i\n',i)
+                if getappdata(wb,'canceling')
+                    delete(wb)
+                    return
+                end
+
+                waitbar(current_time/total_time,wb,sprintf('Seed %i of %i Computing', i, numSeeds))
+                warning('off','MATLAB:scatteredInterpolant:DupPtsAvValuesWarnId');
+                reverse_path = false;
+                [dkx, dky, dkz, dkintense] = RunLibrary_rungekuttaNatInter3D(...
+                    xseed(i),yseed(i),zseed(i), PartArr, path_dir,...
+                    path_length,reverse_path,step_size, wb,RN,N);
+                if isempty(dkx)
+                    fprintf('Path %i unsuccessful\n',i)
+                    continue
+                end
+
+                %Next block only plot peak of pulse
+                if pulse == 1
+                    clear x;
+                    clear y;
+                    clear z;
+                    clear intense;
+                    x = [];
+                    y = [];
+                    z = [];
+                    intense = [];
+                    kdk = 1;
+                    kkdk = 0;
+                    [mdk,ndk] = size(dkintense);
+                    while kdk < ndk;
+                        %Hard wired to plot path only if magnitude of pointing vector > 20
+                        %pointing vector > 20.0
+                        if dkintense(kdk) > 20.0;
+                            kkdk = kkdk+1;
+                            x(kkdk) = dkx(kdk);
+                            y(kkdk) = dky(kdk);
+                            z(kkdk) = dkz(kdk);
+                            intense(kkdk) = dkintense(kdk);
+                        end
+                        kdk = kdk + 1;
+                    end
+                end
+                if pulse == 0
+                    x = dkx;
+                    y = dky;
+                    z = dkz;
+                    intense = dkintense;
+                end  
+
+                Paths(i).X.forward = x;
+                Paths(i).Y.forward = y;
+                Paths(i).Z.forward = z;
+                Paths(i).I.forward = intense;
+                current_time = current_time + 1/numSeeds *80/2;
+                reverse_path = true;
+                [dkx, dky, dkz, dkintense ] = RunLibrary_rungekuttaNatInter3D(...
+                    xseed(i), yseed(i), zseed(i), PartArr, path_dir,...
+                    path_length,reverse_path,step_size, wb,RN,N);
+
+                %Next block added by dk to only plot peak of pulse
+
+                if pulse == 1
+                    clear x;
+                    clear y;
+                    clear z;
+                    clear intense;
+                    x = [];
+                    y = [];
+                    z = [];
+                    intense = [];
+                    kdk = 1;
+                    kkdk = 0;                      
+                    [mdk,ndk] = size(dkintense);
+                    while kdk < ndk;
+                        %Only plot path if magnitude of pointing
+                        %vector  > 20 and x coordinate is < 200.
+                        %This is to stop path extending past 200 in some
+                        %cases and changing length of plot for movie. 
+                        if dkintense(kdk) > plot_minimum_vector;
+                            kkdk = kkdk+1;
+                            x(kkdk) = dkx(kdk);
+                            y(kkdk) = dky(kdk);
+                            z(kkdk) = dkz(kdk);
+                            intense(kkdk) = dkintense(kdk);
+                        end
+                        kdk = kdk + 1;
+                    end
+                end
+                if pulse == 0
+                    x = dkx;
+                    y = dky;
+                    z = dkz;
+                    intense = dkintense;
+                    [mdk,ndk] = size(intense);
+                end
+                Paths(i).X.total = [fliplr(x), Paths(i).X.forward];
+                Paths(i).Y.total = [fliplr(y), Paths(i).Y.forward];
+                Paths(i).Z.total = [fliplr(z), Paths(i).Z.forward];
+                Paths(i).I.total = [fliplr(intense), Paths(i).I.forward];
+                current_time = current_time + 1/numSeeds *80/2;
+                fprintf('Path %i done\n',i)
+            end
+    end
+    fprintf('All seeds tested and appropriate paths computed. Saving path data.\n')
+
+    %******************** Waitbar and Status Update ***************************
+
+    if getappdata(wb,'canceling')
+        delete(wb)
+        return
+    end
+    waitbar(current_time/total_time,wb,sprintf('Paths Finished Paths, Saving and Plotting now...\n'))
+
+    %% ****************  Plotting and Printing  ******************************
+    %Data is output to .mat files so that in a future update the user can
+    %modulate the load path program. For example they could load previous
+    %paths and just run the plotting and printing section of the code. Or
+    %the user could just compute the paths and then send them to someone
+    %else to plot them on their machine or with their specific settings.
+
+    %Other considerations are for future transient analysis where multiple
+    %data sets may have to be condensed. And that its a good backup of the
+    %path calculation.
+
+    save([save_dir slash 'Path Data' slash 'pathdata_' model_data_name '.mat'], 'Paths');
+    fig = figure;
+    fprintf('Plotting Paths\n')
+
+    modelPlot3D([Paths(:).X],[Paths(:).Y],[Paths(:).Z],[Paths(:).I],PartArr,nodes,pulse)
+    % Create new directory to store the output plots
+    mkdir(save_dir,[slash 'Path Plots'])
+    %********************Name of 'bmp' file hard-wired ************************
+    %saveas(fig,'examples\Example1 - Isotropic Plate with Loaded Hole\Path Plots\myplot.bmp')
+    saveas(fig,[save_dir slash 'Path Plots' slash model_name, '.bmp'])
+    %******************** Waitbar and Status Update ***************************
+    if getappdata(wb,'canceling')
+        delete(wb)
+        return
+    end
+    fprintf('Printing to PDF\n')
+    current_time = current_time + plot_time;
+    waitbar(current_time/total_time,wb,sprintf('Printing PDF'))
+
+    if newPDF
+        dt = datestr(now,'HH.MM.SS_dd/mm/yy');
+        dateAppenedFN = [save_dir, slash 'Path Plots' slash ,model_name,'_', dt, '.pdf'];
+    else
+        dateAppenedFN = [save_dir,slash 'Path Plots' slash ,model_name, '.pdf'];
+    end
+
+    % Contrary to variable name and the description in the GUI, this was
+    % repurposed to let the user choose where to print the plot to a pdf or
+    % not. As the density is so high to see the paths properly it can be an
+    % expensive task to compute.
+    
+    %Future update will check whether an instance of the .pdf is already
+    %open and modify the name so that saving conflicts dont happen.
+            
+    delete(wb)
+    fprintf('Load paths complete.\n')
+
+    %%********************************End of Computation******************************
+end
+function [] = modelPlot3D(x_paths,y_paths,z_paths,Intensity,PartArr,nodes,pulse)
+    %Just some custom settings for plotting the paths
+    Alpha = 0.1;
+    Buffer = 0.35;
+    RunPlot_wireFrame(PartArr,Alpha, Buffer,nodes);
+    seedLength = size(x_paths(:),1);
+    maxInt = max(max([Intensity.total]));
+    minInt = min(min([Intensity.total]));
+    if isempty(maxInt)
+        disp('No Successful Paths')
+        return
+    end
+    for k = 1:seedLength
+        if isempty(x_paths(k).total)
+            fprintf('Path %i unsuccessful', k)
+            continue
+        end
+        cd = colormap('parula');
+        %%*********************************If transient solution hardwire maximum ***********
+        %%*********************************Should be same for all plots in sequence *********
+        %%*********************************Not just current plot. ***************************
+        %%*********************************pulse = 1 if plot is transient *************
+        if pulse == 1
+		    cd = colormap(flipud(hot));
+            cdd = [];
+            cd = [];
+            cdd = flipud(hot(64));
+            vmax = max([Intensity(k).total]);
+            if vmax > plot_maximum_vector;
+                   vmax = plot_maximum_vector;
+            end       
+            ncol = 64 * vmax/plot_maximum_vector;
+            for i = 1:ncol;
+                for j = 1:3;
+                    cd(i,j) = cdd(i,j);
+                end
+            end 
+            cd = colormap(cd);
+        end    
+        %finish   
+        cd = interp1(linspace(minInt,maxInt,length(cd)),cd,Intensity(k).total);
+        cd = uint8(cd'*255);
+        cd(4,:) = 255;
+        paths = line(x_paths(k).total,y_paths(k).total,z_paths(k).total);
+        drawnow;
+        set(paths.Edge,'ColorBinding','interpolated', 'ColorData',cd)
+    end
+    %Turn off plot of colorbar
+    colorbar;
+end
+
+##### SOURCE END #####
+--></body></html>
