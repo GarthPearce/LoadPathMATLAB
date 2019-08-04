@@ -126,7 +126,7 @@ function [F, Fs1, Fs2] = setInterpFunc(Element, pathDir, ReversePath)
         case 'Y'
             stress_tensor = [[nodes(:).yStress]', [nodes(:).xyStress]', [nodes(:).yzStress]'];
         case 'Z'
-            stress_tensor = [[nodes(:).zStress]', [nodes(:).yzStress]', [nodes(:).xzStress]'];
+            stress_tensor = [[nodes(:).zStress]', [nodes(:).xzStress]', [nodes(:).yzStress]'];
     end
     F = scatteredInterpolant(coordx, coordy, coordz, stress_tensor(:,1), 'natural');
     Fs1 = scatteredInterpolant(coordx, coordy, coordz, stress_tensor(:,2), 'natural');

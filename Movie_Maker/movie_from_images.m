@@ -1,10 +1,11 @@
 %Find all the jpg files in the images folder
 workingDir = pwd
+mov_name = 'out.mp4'
 image_directory = 'Step_Images'
 imageNames = dir(fullfile(workingDir,image_directory,'*.BMP'))
 imageNames = {imageNames.name}'
 %Construct a VideoWriter object, which creates a Motion-JPEG AVI file by default.
-outputVideo = VideoWriter(fullfile(workingDir,'out.avi'));
+outputVideo = VideoWriter(fullfile(workingDir,mov_name), 'MPEG-4');
 %Frame rate frames per second
 outputVideo.FrameRate = 1;
 open(outputVideo)
@@ -16,7 +17,7 @@ end
 %Finalize the video file.
 close(outputVideo)
 %View the Final Video  :-   Construct a reader object.
-Avi = VideoReader(fullfile(workingDir,'out.avi'));
+Avi = VideoReader(fullfile(workingDir,mov_name));
 %Create a MATLAB movie struct from the video frames.
 ii = 1;
 while hasFrame(Avi)
