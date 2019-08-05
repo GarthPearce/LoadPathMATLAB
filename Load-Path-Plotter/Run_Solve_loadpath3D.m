@@ -34,9 +34,8 @@ tic
     model_name = [model_name, ' - ',upper(path_dir), ' Path'];
     model_data_name = regexprep(model_name, ' ', '_');
 
-    if ismac
-        path_separator = '/';
-    elseif ispc
+    path_separator = '/';
+    if ispc
         path_separator = '\';
         system(strjoin(['taskkill /fi "WINDOWTITLE eq ', model_name,'.pdf"'],''));
     end
@@ -356,7 +355,7 @@ tic
 
     gcf;
     print(fig,dateAppenedFN, '-dpdf','-r1000', '-fillpage');
-    open(dateAppenedFN);
+    % open(dateAppenedFN);
 
     % Contrary to variable name and the description in the GUI, this was
     % repurposed to let the user choose where to print the plot to a pdf or

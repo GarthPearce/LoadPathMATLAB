@@ -7,9 +7,8 @@ function [numNodes,PartArr] = Input_datread(fpath, nodes)
 % the connectivity accordingly.
 
 
-    if ismac
-        path_separator = '/';
-    elseif ispc
+    path_separator = '/';
+    if ispc
         path_separator = '\';
     end
     fname = strjoin([fpath  path_separator 'ds.dat'],'');

@@ -9,9 +9,8 @@ function [StressData, count] = Input_nodeDat(filePath, numNodes)
 % StressData format:  
 %[<Node number>, <X stress>, <Y stress>, <Z stress>, <XY stress>, <YZ stress>, <XZ stress>]
 
-    if ismac
-        path_separator = '/';
-    elseif ispc
+    path_separator = '/';
+    if ispc
         path_separator = '\';
     end
     numOfResults = 7;
