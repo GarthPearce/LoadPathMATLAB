@@ -6,7 +6,7 @@ function [nodes] = Input_NodeDatRead(fname, StressData, numNodes)
 % when ANSYS would delete midside nodes, hence not storing their stress
 % values, but keeping the numbering system. I built this as a workaround.
 %
-% Since then however, I cam up with a better way of doing this which I am
+% Since then however, I came up with a better way of doing this which I am
 % yet to implement for nodes, but implemented for elements.
 
     clear nodes

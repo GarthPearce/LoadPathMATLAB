@@ -1,6 +1,6 @@
-function Run_Solve_loadpath3D(sim_dir, seed_dir, save_dir, model_name,path_dir,...
-                    pulse, parallel, newPDF, recompute, step_size, path_length,...
-                    plot_minimum_vector, plot_maximum_vector)
+function Run_Solve_loadpath3D(simulationDirectory, seedDirectory, saveDirectory, modelName,pathDirectory,...
+                    pulse, parallel, newPDF, recompute, stepSize, pathLength,...
+                    plotMinimumVector, plotMaximumVector)
 %% ********************  House Keeping   ******************************
 tic
 % Closes previously opened waitbars
@@ -8,40 +8,40 @@ tic
     delete(F);
 
     % Read's seed data in
-    Seed = importdata(seed_dir, ',');
+    Seed = importdata(seedDirectory, ',');
     [numSeeds, ~] = size(Seed);
     if numSeeds > 0
-        xseed = Seed(:,1);
-        yseed = Seed(:,2);
-        zseed = Seed(:,3);
+        xSeed = Seed(:,1);
+        ySeed = Seed(:,2);
+        zSeed = Seed(:,3);
     end
 
 %% HouseKeeping - waitbar setup
-    wb = waitbar(0,'1','Name','Computing Load Paths',...
+    waitBar = waitbar(0,'1','Name','Computing Load Paths',...
             'CreateCancelBtn',...
             'setappdata(gcbf,''canceling'',1)');
-    setappdata(wb,'canceling',0)
-    data_read_time = 7;
-    plot_time = 3;
-    print_time = 10;
-    path_time = 80;
-    total_time = data_read_time + plot_time + print_time + path_time;
-    current_time = 0;
+    setappdata(waitBar,'canceling',0)
+    DATA_READ_TIME = 7;
+    PLOT_TIME = 3;
+    PRINT_TIME = 10;
+    PATH_TIME = 80;
+    totalTime = DATA_READ_TIME + PLOT_TIME + PRINT_TIME + PATH_TIME;
+    CURRENT_TIME = 0;
     warning('off','MATLAB:scatteredInterpolant:DupPtsAvValuesWarnId');
     warning('off','MATLAB:MKDIR:DirectoryExists')
 
     %% Naming output files and killing interfering processes
-    model_name = [model_name, ' - ',upper(path_dir), ' Path'];
-    model_data_name = regexprep(model_name, ' ', '_');
+    modelName = [modelName, ' - ',upper(pathDirectory), ' Path'];
+    modelDataName = regexprep(modelName, ' ', '_');
 
-    path_separator = '/';
+    pathSeparator = '/';
     if ispc
-        path_separator = '\';
-        system(strjoin(['taskkill /fi "WINDOWTITLE eq ', model_name,'.pdf"'],''));
+        pathSeparator = '\';
+        system(strjoin(['taskkill /fi "WINDOWTITLE eq ', modelName,'.pdf"'],''));
     end
 
-    nodei = strjoin([sim_dir path_separator 'nodeInfo.txt'],'');
-    numNodes = importdata(nodei);
+    iNode = strjoin([simulationDirectory pathSeparator 'nodeInfo.txt'],'');
+    numNodes = importdata(iNode);
     numNodes = numNodes(2);
 
     %% ******************  Populate Nodes and Elements  *********************
@@ -49,34 +49,34 @@ tic
     % Detects whether previous data has been computed, if yes, skips
     % recomputation unless forced by user in GUI
 
-    output_path = strjoin([save_dir, path_separator,'Path Data', path_separator, 'data_', model_data_name,'.mat'], '');
+    output_path = strjoin([saveDirectory, pathSeparator,'Path Data', pathSeparator, 'data_', modelDataName,'.mat'], '');
 
     if ~exist(output_path, 'file') || recompute
 
         fprintf('New model or user nominated to recompute data. Starting now.\n')
-        waitbar(current_time/total_time,wb,sprintf('Computing Initial Data'))
+        waitbar(CURRENT_TIME/totalTime,waitBar,sprintf('Computing Initial Data'))
 
         %Nodal Information module
-        [StressData, numNodes] = Input_nodeDat(sim_dir, numNodes);
-        current_time = current_time + data_read_time/3;
-        waitbar(current_time/total_time,wb,sprintf('Computing Initial Data'))
+        [StressData, numNodes] = Input_nodeDat(simulationDirectory, numNodes);
+        CURRENT_TIME = CURRENT_TIME + DATA_READ_TIME/3;
+        waitbar(CURRENT_TIME/totalTime,waitBar,sprintf('Computing Initial Data'))
         fprintf('Nodal information complete. Starting stress population.\n')
 
         %Node data module
-        [nodes] = Input_NodeDatRead(sim_dir, StressData, numNodes);
-        current_time = current_time + data_read_time/3;
-        waitbar(current_time/total_time,wb,sprintf('Computing Initial Data'))
+        [nodes] = Input_NodeDatRead(simulationDirectory, StressData, numNodes);
+        CURRENT_TIME = CURRENT_TIME + DATA_READ_TIME/3;
+        waitbar(CURRENT_TIME/totalTime,waitBar,sprintf('Computing Initial Data'))
         fprintf('Nodal stresses populated. Element generation beginning.\n')
 
         %Element data and main data structure generation -  %DK read element connectivity is read
-        [nodePerEl, PartArr] = Input_datread(sim_dir,nodes); 
-        current_time = current_time + data_read_time/3;
+        [nodePerEl, PartArr] = Input_datread(simulationDirectory,nodes); 
+        CURRENT_TIME = CURRENT_TIME + DATA_READ_TIME/3;
 
         fprintf('Elements constructed, directories being created and data being saved.\n')
-        ename = 'Path Data';
-        dname = char(save_dir);
-        mkdir(dname,ename);
-        save(strjoin([dname path_separator ename path_separator 'data_' model_data_name '.mat'],''),'PartArr','nodes', 'nodePerEl');
+        eName = 'Path Data';
+        dName = char(saveDirectory);
+        mkdir(dName,eName);
+        save(strjoin([dName pathSeparator eName pathSeparator 'data_' modelDataName '.mat'],''),'PartArr','nodes', 'nodePerEl');
     %% ******************  Define quadrilateral faces of elements **************************
     %% ******************  and check face normal is positive pointing out  **************
     %% ******************  Only works for Hex8 Bricks
@@ -97,17 +97,17 @@ tic
                 PointVec = zeros(1,3);
                 for kk = 1,8;
                     kkk = elnods(kk);
-                    if path_dir == 'X'
+                    if pathDirectory == 'X'
                         PointVec(1) = PointVec(1) + nodes(kkk).xStress/8.0;
                         PointVec(2) = PointVec(2) + nodes(kkk).xyStress/8.0;
                         PointVec(3) = PointVec(3) + nodes(kkk).xzStress/8.0;
                     end
-                    if path_dir == 'Y'
+                    if pathDirectory == 'Y'
                         PointVec(1) = PointVec(1) + nodes(kkk).xyStress/8.0;
                         PointVec(2) = PointVec(2) + nodes(kkk).yStress/8.0;
                         PointVec(3) = PointVec(3) + nodes(kkk).yzStress/8.0;
                     end
-                    if path_dir == 'Z'
+                    if pathDirectory == 'Z'
                         PointVec(1) = PointVec(1) + nodes(kkk).xzStress/8.0;
                         PointVec(2) = PointVec(2) + nodes(kkk).yzStress/8.0;
                         PointVec(3) = PointVec(3) + nodes(kkk).zStress/8.0;
@@ -125,9 +125,9 @@ tic
             for k = 1:numel
                 if abs(CGXYZ(1,k) - xs) < 0.1
                     nSeeds = nSeeds + 1;
-                    xseed(nSeeds) = CGXYZ(1,k);
-                    yseed(nSeeds) = CGXYZ(2,k);
-                    zseed(nSeeds) = CGXYZ(3,k);
+                    xSeed(nSeeds) = CGXYZ(1,k);
+                    ySeed(nSeeds) = CGXYZ(2,k);
+                    zSeed(nSeeds) = CGXYZ(3,k);
                 end
             end
             numSeeds = nSeeds;
@@ -135,20 +135,20 @@ tic
     else
         %This loads data if the preprocessign has already been done.
         fprintf('Previous model detected, loading data.\n')
-        waitbar(current_time/total_time,wb,sprintf('Loading Data'))
-        load(strjoin([save_dir path_separator 'Path Data' path_separator 'data_' model_data_name,'.mat'],''));
-        current_time = current_time + data_read_time;
+        waitbar(CURRENT_TIME/totalTime,waitBar,sprintf('Loading Data'))
+        load(strjoin([saveDirectory pathSeparator 'Path Data' pathSeparator 'data_' modelDataName,'.mat'],''));
+        CURRENT_TIME = CURRENT_TIME + DATA_READ_TIME;
 
         fprintf('Data loaded. Starting path computation.\n')
     end
         %******************** Waitbar and Status Update ***************************
 
-    if getappdata(wb,'canceling')
-        delete(wb)
+    if getappdata(waitBar,'canceling')
+        delete(waitBar)
         return
     end
 
-    waitbar(current_time/total_time,wb,sprintf('Starting Paths'))
+    waitbar(CURRENT_TIME/totalTime,waitBar,sprintf('Starting Paths'))
 
     %% ****************  Load Path Generation  ******************************
     %Initialise data containers for load paths
@@ -175,8 +175,8 @@ tic
                     %Main work horse module - Runge Kutta
                     reverse_path = false;
                     [x, y, z, intense] = RunLibrary_rungekuttaNatInter3D(...
-                        xseed(i),yseed(i),zseed(i), PartArr, path_dir,...
-                        path_length,reverse_path,step_size, wb);
+                        xSeed(i),ySeed(i),zSeed(i), PartArr, pathDirectory,...
+                        pathLength,reverse_path,stepSize, waitBar);
                     if isempty(x)
                         fprintf('Path %i unsuccessful\n',i)
                         continue
@@ -188,8 +188,8 @@ tic
                     Paths(i).I.forward = intense;
 
                      [x, y, z, intense ] = RunLibrary_rungekuttaNatInter3D(...
-                        xseed(i),yseed(i),zseed(i), PartArr, path_dir,...
-                        path_length,reverse_path,step_size, wb);
+                        xSeed(i),ySeed(i),zSeed(i), PartArr, pathDirectory,...
+                        pathLength,reverse_path,stepSize, waitBar);
                     Paths(i).X.total = [fliplr(x), Paths(i).X.forward];
                     Paths(i).Y.total = [fliplr(y), Paths(i).Y.forward];
                     Paths(i).Z.total = [fliplr(z), Paths(i).Z.forward];
@@ -197,21 +197,21 @@ tic
                     [mdk,ndk] = size(intense);
                     fprintf('Path %i done\n',i);
                 end
-                current_time = current_time +80;
+                CURRENT_TIME = CURRENT_TIME +80;
     	  % ******************   Single thread processing
         case 0
             for i = 1:numSeeds
                 %fprintf('Starting path %i\n',i)
-                if getappdata(wb,'canceling')
-                    delete(wb)
+                if getappdata(waitBar,'canceling')
+                    delete(waitBar)
                     return
                 end
-                waitbar(current_time/total_time,wb,sprintf('Seed %i of %i Computing', i, numSeeds))
+                waitbar(CURRENT_TIME/totalTime,waitBar,sprintf('Seed %i of %i Computing', i, numSeeds))
                 warning('off','MATLAB:scatteredInterpolant:DupPtsAvValuesWarnId');
                 reverse_path = false;
                 [dkx, dky, dkz, dkintense] = RunLibrary_rungekuttaNatInter3D(...
-                    xseed(i),yseed(i),zseed(i), PartArr, path_dir,...
-                    path_length,reverse_path,step_size, wb);
+                    xSeed(i),ySeed(i),zSeed(i), PartArr, pathDirectory,...
+                    pathLength,reverse_path,stepSize, waitBar);
                 if isempty(dkx)
                     fprintf('Path %i unsuccessful\n',i)
                     continue
@@ -233,7 +233,7 @@ tic
                     while kdk < ndk;
                         %Plot path only if magnitude of pointing vector >
                         %minimum define in input
-                        if dkintense(kdk) > plot_minimum_vector;
+                        if dkintense(kdk) > plotMinimumVector;
                             kkdk = kkdk+1;
                             x(kkdk) = dkx(kdk);
                             y(kkdk) = dky(kdk);
@@ -254,11 +254,11 @@ tic
                 Paths(i).Y.forward = y;
                 Paths(i).Z.forward = z;
                 Paths(i).I.forward = intense;
-                current_time = current_time + 1/numSeeds *80/2;
+                CURRENT_TIME = CURRENT_TIME + 1/numSeeds *80/2;
                 reverse_path = true;
                 [dkx, dky, dkz, dkintense ] = RunLibrary_rungekuttaNatInter3D(...
-                    xseed(i), yseed(i), zseed(i), PartArr, path_dir,...
-                    path_length,reverse_path,step_size, wb);
+                    xSeed(i), ySeed(i), zSeed(i), PartArr, pathDirectory,...
+                    pathLength,reverse_path,stepSize, waitBar);
 
                 %Next block added by dk to only plot peak of pulse
 
@@ -279,7 +279,7 @@ tic
                         %vector  > 20 and x coordinate is < 200.
                         %This is to stop path extending past 200 in some
                         %cases and changing length of plot for movie. 
-                        if dkintense(kdk) > plot_minimum_vector;
+                        if dkintense(kdk) > plotMinimumVector;
                             kkdk = kkdk+1;
                             x(kkdk) = dkx(kdk);
                             y(kkdk) = dky(kdk);
@@ -300,7 +300,7 @@ tic
                 Paths(i).Y.total = [fliplr(y), Paths(i).Y.forward];
                 Paths(i).Z.total = [fliplr(z), Paths(i).Z.forward];
                 Paths(i).I.total = [fliplr(intense), Paths(i).I.forward];
-                current_time = current_time + 1/numSeeds *80/2;
+                CURRENT_TIME = CURRENT_TIME + 1/numSeeds *80/2;
                 fprintf('Path %i done\n',i)
             end
     end
@@ -308,11 +308,11 @@ tic
 
     %******************** Waitbar and Status Update ***************************
 
-    if getappdata(wb,'canceling')
-        delete(wb)
+    if getappdata(waitBar,'canceling')
+        delete(waitBar)
         return
     end
-    waitbar(current_time/total_time,wb,sprintf('Paths Finished Paths, Saving and Plotting now...\n'))
+    waitbar(CURRENT_TIME/totalTime,waitBar,sprintf('Paths Finished Paths, Saving and Plotting now...\n'))
 
     %% ****************  Plotting and Printing  ******************************
     %Data is output to .mat files so that in a future update the user can
@@ -325,33 +325,33 @@ tic
     %data sets may have to be condensed. And that its a good backup of the
     %path calculation.
 
-    save(strjoin([save_dir path_separator 'Path Data' path_separator 'pathdata_' model_data_name '.mat'],''), 'Paths');
+    save(strjoin([saveDirectory pathSeparator 'Path Data' pathSeparator 'pathdata_' modelDataName '.mat'],''), 'Paths');
     fig = figure;
     fprintf('Plotting Paths\n')
 
     modelPlot3D([Paths(:).X],[Paths(:).Y],[Paths(:).Z],[Paths(:).I],...
-            PartArr,nodes,pulse, plot_minimum_vector, plot_maximum_vector)
+            PartArr,nodes,pulse, plotMinimumVector, plotMaximumVector)
     % Create new directory to store the output plots
-    ename = 'Path Plots';
-    dname = char(save_dir);
-    mkdir(dname,ename);
+    eName = 'Path Plots';
+    dName = char(saveDirectory);
+    mkdir(dName,eName);
     %********************Name of 'bmp' file hard-wired ************************
-    saveas(fig,strjoin([save_dir path_separator 'Path Plots' path_separator model_name, '.bmp'],''))
+    saveas(fig,strjoin([saveDirectory pathSeparator 'Path Plots' pathSeparator modelName, '.bmp'],''))
     %******************** Waitbar and Status Update ***************************
-    if getappdata(wb,'canceling')
-        delete(wb)
+    if getappdata(waitBar,'canceling')
+        delete(waitBar)
         return
     end
     fprintf('Printing to PDF\n')
-    current_time = current_time + plot_time;
-    waitbar(current_time/total_time,wb,sprintf('Printing PDF'))
+    CURRENT_TIME = CURRENT_TIME + PLOT_TIME;
+    waitbar(CURRENT_TIME/totalTime,waitBar,sprintf('Printing PDF'))
 
     if newPDF
         dt = datestr(now,'yy_mm_dd_HH_MM_SS');
     else
         dt = '';
     end
-    dateAppenedFN = strjoin([save_dir, path_separator, 'Path Plots', path_separator ,model_name,'_', dt, '.pdf'],'');
+    dateAppenedFN = strjoin([saveDirectory, pathSeparator, 'Path Plots', pathSeparator ,modelName,'_', dt, '.pdf'],'');
 
     gcf;
     print(fig,dateAppenedFN, '-dpdf','-r1000', '-fillpage');
@@ -362,14 +362,14 @@ tic
     % not. As the density is so high to see the paths properly it can be an
     % expensive task to compute.
 
-    delete(wb)
+    delete(waitBar)
     fprintf('Load paths complete.\n')
 
     %%********************************End of Computation******************************
     toc
 end
 function [] = modelPlot3D(x_paths,y_paths,z_paths,Intensity,PartArr,...
-                nodes,pulse, plot_minimum_vector, plot_maximum_vector)
+                nodes,pulse, plotMinimumVector, plotMaximumVector)
     %Just some custom settings for plotting the paths
     Alpha = 0.1;
     Buffer = 0.35;
@@ -397,10 +397,10 @@ function [] = modelPlot3D(x_paths,y_paths,z_paths,Intensity,PartArr,...
             cd = [];
             cdd = flipud(hot(64));
             vmax = max([Intensity(k).total]);
-            if vmax > plot_maximum_vector
-                   vmax = plot_maximum_vector;
+            if vmax > plotMaximumVector
+                   vmax = plotMaximumVector;
             end
-            ncol = 64 * vmax/plot_maximum_vector;
+            ncol = 64 * vmax/plotMaximumVector;
             for i = 1:ncol
                 for j = 1:3
                     cd(i,j) = cdd(i,j);
