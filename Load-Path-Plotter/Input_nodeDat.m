@@ -13,22 +13,22 @@ function [StressData, count] = Input_nodeDat(filePath, numNodes)
     if ispc
         path_separator = '\';
     end
-    numOfResults = 7;
+    N_RESULTS = 7;
     filePath = strjoin([filePath  path_separator 'nodalSolution.txt'],'');
     
-    datafile = fopen(filePath);
+    dataFile = fopen(filePath);
 %Scans until the start of the file is found. Trash data is a temp variable
 %to test and advance the reading function.
     trashdata = 'a';
     startelements = '    NODE';
 
     while ~strncmpi(trashdata,startelements, length(startelements))
-        trashdata = fgetl(datafile);
+        trashdata = fgetl(dataFile);
     end
-    StressData = nan(numOfResults,numNodes);
+    StressData = nan(N_RESULTS,numNodes);
     count = 1;
     for i = 1:numNodes
-        linetest = strtrim(fgetl(datafile));
+        linetest = strtrim(fgetl(dataFile));
         
         if isempty(linetest)
             break
@@ -40,5 +40,5 @@ function [StressData, count] = Input_nodeDat(filePath, numNodes)
         count = count+1;
     end
     count=count-1;
-    fclose(datafile);
+    fclose(dataFile);
 end
