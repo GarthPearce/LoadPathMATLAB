@@ -10,9 +10,8 @@ function [nodes] = Input_NodeDatRead(fname, StressData, numNodes)
 % yet to implement for nodes, but implemented for elements.
 
     clear nodes
-    if ismac
-        path_separator = '/';
-    elseif ispc
+    path_separator = '/';
+    if ispc
         path_separator = '\';
     end
     fname = strjoin([fname  path_separator 'ds.dat'],'');
