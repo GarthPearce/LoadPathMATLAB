@@ -354,7 +354,7 @@ tic
     dateAppenedFN = strjoin([saveDirectory, pathSeparator, 'Path Plots', pathSeparator ,modelName,'_', dt, '.pdf'],'');
 
     gcf;
-    print(fig,dateAppenedFN, '-dpdf','-r1000', '-fillpage');
+    % print(fig,dateAppenedFN, '-dpdf','-r300', '-fillpage');
     % open(dateAppenedFN);
 
     % Contrary to variable name and the description in the GUI, this was
